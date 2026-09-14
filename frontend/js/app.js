@@ -953,6 +953,7 @@ class App {
       if (this.elements.hudSecCenter) {
         this.elements.hudSecCenter.style.color = sectors.center.has_obstacle ? "#ef4444" : "#f8fafc";
       }
+    }
   }
 
   /**
