@@ -48,8 +48,8 @@ KNOWN_MODELS = [
         "resolutions": [320, 480],
         "is_end2end": True,
         "cdn_urls": {
-            320: "https://raw.githubusercontent.com/Aryan1q/DRISHTIX/master/navigation/mobile_distributable_models/yolo26n-nav-run6_320.onnx",
-            480: "https://raw.githubusercontent.com/Aryan1q/DRISHTIX/master/navigation/mobile_distributable_models/yolo26n-nav-run6_480.onnx"
+            320: "https://raw.githubusercontent.com/Ashutosh-Ranjan310106/yolo-model-edge-inference/main/models/yolo26n-nav-run6_320.onnx",
+            480: "https://raw.githubusercontent.com/Ashutosh-Ranjan310106/yolo-model-edge-inference/main/models/yolo26n-nav-run6_480.onnx"
         }
     },
     {
@@ -63,7 +63,7 @@ KNOWN_MODELS = [
         "resolutions": [320, 480, 640],
         "is_end2end": False,
         "cdn_urls": {
-            320: "https://raw.githubusercontent.com/Aryan1q/DRISHTIX/master/navigation/mobile_distributable_models/yolo26n-24k-nav-run1_best_320.onnx"
+            320: "https://raw.githubusercontent.com/Ashutosh-Ranjan310106/yolo-model-edge-inference/main/models/yolo26n-24k-nav-run1_best_320.onnx"
         }
     },
     {
@@ -194,7 +194,7 @@ KNOWN_MODELS = [
         "mean": [0.485, 0.456, 0.406],
         "std": [0.229, 0.224, 0.225],
         "is_metric": False,
-        "cdn_url": "https://raw.githubusercontent.com/Aryan1q/DRISHTIX/master/navigation/mobile_distributable_models/depth_anything_v2_small_quantized.onnx"
+        "cdn_url": "https://raw.githubusercontent.com/Ashutosh-Ranjan310106/yolo-model-edge-inference/main/models/depth_anything_v2_small_quantized.onnx"
     },
     {
         "id": "yolo26s_depth",
@@ -212,7 +212,7 @@ KNOWN_MODELS = [
         "mean": [0.0, 0.0, 0.0],
         "std": [255.0, 255.0, 255.0],
         "is_metric": True,
-        "cdn_url": "https://raw.githubusercontent.com/Aryan1q/DRISHTIX/master/navigation/mobile_distributable_models/yolo26s_depth.onnx"
+        "cdn_url": "https://raw.githubusercontent.com/Ashutosh-Ranjan310106/yolo-model-edge-inference/main/models/yolo26s_depth.onnx"
     },
     {
         "id": "yolo26n_depth",
@@ -230,7 +230,7 @@ KNOWN_MODELS = [
         "mean": [0.0, 0.0, 0.0],
         "std": [255.0, 255.0, 255.0],
         "is_metric": True,
-        "cdn_url": "https://raw.githubusercontent.com/Aryan1q/DRISHTIX/master/navigation/mobile_distributable_models/yolo26n_depth.onnx"
+        "cdn_url": "https://raw.githubusercontent.com/Ashutosh-Ranjan310106/yolo-model-edge-inference/main/models/yolo26n_depth.onnx"
     }
 ]
 
