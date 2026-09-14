@@ -26,14 +26,48 @@ app.add_middleware(
     expose_headers=["Content-Range", "Content-Length", "Accept-Ranges", "X-Model-ID", "X-Model-Resolution", "X-Model-Format", "*"],
 )
 
-# Development No-Cache Middleware - ensures mobile phones and browsers always fetch fresh JS/CSS (bypasses 304)
-@app.middleware("http")
-async def add_no_cache_header(request, call_next):
-    response = await call_next(request)
-    if request.url.path.startswith("/client"):
-        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate, max-age=0"
+class NoCacheStaticFiles(StaticFiles):
+    """
+    Custom StaticFiles implementation that completely disables caching for frontend assets.
+    Always returns HTTP 200 with fresh content and never returns 304 Not Modified.
+    """
+    def is_not_modified(self, response_headers, request_headers) -> bool:
+        return False
+
+    async def get_response(self, path: str, scope):
+        response = await super().get_response(path, scope)
+        response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
         response.headers["Pragma"] = "no-cache"
         response.headers["Expires"] = "0"
+        if "etag" in response.headers:
+            del response.headers["etag"]
+        if "last-modified" in response.headers:
+            del response.headers["last-modified"]
+        return response
+
+# Disable frontend caching middleware - forces browser to always fetch fresh HTML, CSS, JS
+@app.middleware("http")
+async def disable_frontend_cache_middleware(request, call_next):
+    if request.url.path.startswith("/client"):
+        # Strip conditional request headers so backend and StaticFiles never return 304
+        filtered_headers = [
+            (name, val) for name, val in request.scope.get("headers", [])
+            if name.lower() not in (b"if-none-match", b"if-modified-since")
+        ]
+        request.scope["headers"] = filtered_headers
+
+    response = await call_next(request)
+
+    if request.url.path.startswith("/client"):
+        response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+        response.headers["Surrogate-Control"] = "no-store"
+        if "etag" in response.headers:
+            del response.headers["etag"]
+        if "last-modified" in response.headers:
+            del response.headers["last-modified"]
+
     return response
 
 # Include API & WebSocket Routers
@@ -41,9 +75,9 @@ app.include_router(health.router, prefix="/api")
 app.include_router(models.router, prefix="/api")
 app.include_router(inference_ws.router)
 
-# Static frontend mount if frontend exists
+# Static frontend mount with zero caching
 if settings.FRONTEND_DIR.exists():
-    app.mount("/client", StaticFiles(directory=str(settings.FRONTEND_DIR), html=True), name="frontend")
+    app.mount("/client", NoCacheStaticFiles(directory=str(settings.FRONTEND_DIR), html=True), name="frontend")
 
 @app.get("/", include_in_schema=False)
 async def root_redirect():

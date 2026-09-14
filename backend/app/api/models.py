@@ -113,7 +113,7 @@ async def download_model(
             "Accept-Ranges": "bytes",
             "Content-Length": str(file_size),
             "Content-Disposition": f'attachment; filename="{model_path.name}"',
-            "Cache-Control": "no-cache, no-store, must-revalidate",
+            "Cache-Control": "public, max-age=31536000, immutable",
             "X-Model-ID": model_id,
             "X-Model-Resolution": str(resolution),
             "X-Model-Format": format
