@@ -1,0 +1,22 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Caches and logs
+.pytest_cache/
+*.log
+uvicorn*.log
+.DS_Store
+Thumbs.db
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Large training checkpoints (weights/ is preserved for models/ only)
+*.pt
+backend/weights/
+backend/runs/
+backend/pc_test_outputs/

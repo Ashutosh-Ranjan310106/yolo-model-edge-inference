@@ -1,0 +1,54 @@
+{
+  "repository": "Ashutosh-Ranjan310106/yolo-model-edge-inference",
+  "cdn_provider": "GitHub Raw + jsDelivr CDN",
+  "models": [
+    {
+      "filename": "yolo26n-nav-run6_320.onnx",
+      "file_size_mb": 9.26,
+      "file_size_bytes": 9714447,
+      "sha256": "3a92e45026b6d2e56cf9c866e97c4db841b901f0a92d47d03cf4b6f65ebbe671",
+      "cdn_url": "https://raw.githubusercontent.com/Ashutosh-Ranjan310106/yolo-model-edge-inference/main/models/yolo26n-nav-run6_320.onnx",
+      "jsdelivr_cdn_url": "https://cdn.jsdelivr.net/gh/Ashutosh-Ranjan310106/yolo-model-edge-inference@main/models/yolo26n-nav-run6_320.onnx"
+    },
+    {
+      "filename": "yolo26n-nav-run6_480.onnx",
+      "file_size_mb": 9.31,
+      "file_size_bytes": 9767005,
+      "sha256": "903193605e9cea7fdd2911459c1764b2e7085ca6edccd21f61b69c428f6e685e",
+      "cdn_url": "https://raw.githubusercontent.com/Ashutosh-Ranjan310106/yolo-model-edge-inference/main/models/yolo26n-nav-run6_480.onnx",
+      "jsdelivr_cdn_url": "https://cdn.jsdelivr.net/gh/Ashutosh-Ranjan310106/yolo-model-edge-inference@main/models/yolo26n-nav-run6_480.onnx"
+    },
+    {
+      "filename": "yolo26s_depth.onnx",
+      "file_size_mb": 45.98,
+      "file_size_bytes": 48216222,
+      "sha256": "8814f4be36d51f0fdafae8c0528378ecf20ba6a1c671fc9c77f4fe1675189765",
+      "cdn_url": "https://raw.githubusercontent.com/Ashutosh-Ranjan310106/yolo-model-edge-inference/main/models/yolo26s_depth.onnx",
+      "jsdelivr_cdn_url": "https://cdn.jsdelivr.net/gh/Ashutosh-Ranjan310106/yolo-model-edge-inference@main/models/yolo26s_depth.onnx"
+    },
+    {
+      "filename": "yolo26n_depth.onnx",
+      "file_size_mb": 19.81,
+      "file_size_bytes": 20772760,
+      "sha256": "6583ec12521a7e75eacb209db63393158c7e0e772cda9fdad8c8c0fe74af2a1e",
+      "cdn_url": "https://raw.githubusercontent.com/Ashutosh-Ranjan310106/yolo-model-edge-inference/main/models/yolo26n_depth.onnx",
+      "jsdelivr_cdn_url": "https://cdn.jsdelivr.net/gh/Ashutosh-Ranjan310106/yolo-model-edge-inference@main/models/yolo26n_depth.onnx"
+    },
+    {
+      "filename": "depth_anything_v2_small_quantized.onnx",
+      "file_size_mb": 26.0,
+      "file_size_bytes": 27258801,
+      "sha256": "fcf51f1b230362b28690bb9d1809bf0431f29cad20534e3f589bd7285547f20d",
+      "cdn_url": "https://raw.githubusercontent.com/Ashutosh-Ranjan310106/yolo-model-edge-inference/main/models/depth_anything_v2_small_quantized.onnx",
+      "jsdelivr_cdn_url": "https://cdn.jsdelivr.net/gh/Ashutosh-Ranjan310106/yolo-model-edge-inference@main/models/depth_anything_v2_small_quantized.onnx"
+    },
+    {
+      "filename": "yolo26n-24k-nav-run1_best_320.onnx",
+      "file_size_mb": 9.24,
+      "file_size_bytes": 9688121,
+      "sha256": "c8188758778dec06e0668be5ae2583d5236fc108427cb00ad6242172aa71b058",
+      "cdn_url": "https://raw.githubusercontent.com/Ashutosh-Ranjan310106/yolo-model-edge-inference/main/models/yolo26n-24k-nav-run1_best_320.onnx",
+      "jsdelivr_cdn_url": "https://cdn.jsdelivr.net/gh/Ashutosh-Ranjan310106/yolo-model-edge-inference@main/models/yolo26n-24k-nav-run1_best_320.onnx"
+    }
+  ]
+}
