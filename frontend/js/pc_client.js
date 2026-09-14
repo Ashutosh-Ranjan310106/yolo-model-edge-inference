@@ -94,7 +94,7 @@ export class PCInferenceClient {
     }
   }
 
-  configure(modelName, resolution = 480, confidence = 0.25, recordConfig = null) {
+  configure(modelName, resolution = 480, confidence = 0.25, recordConfig = null, depthModelName = "yolo26n_depth", depthResolution = 512, enableDepth = true) {
     if (!this.isConnected || !this.ws) {
       return false;
     }
@@ -103,6 +103,9 @@ export class PCInferenceClient {
       model: modelName,
       resolution: resolution,
       confidence: confidence,
+      depth_model: depthModelName,
+      depth_resolution: depthResolution,
+      enable_depth: enableDepth,
       record: recordConfig || { enabled: false, frequency: 5, only_detections: false }
     };
     this.ws.send(JSON.stringify(payload));

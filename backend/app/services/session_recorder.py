@@ -145,35 +145,57 @@ class TestSessionRecorder:
         original_bgr: np.ndarray,
         detections: List[Dict[str, Any]],
         fps: float,
-        latency_dict: Dict[str, float]
+        latency_dict: Dict[str, float],
+        annotated_bgr: Optional[np.ndarray] = None,
+        result_payload: Optional[Dict[str, Any]] = None
     ) -> bool:
-        """Saves original and annotated pair with identical frame_id and appends metadata."""
+        """Saves original, annotated frame pair, and structured JSON metadata alongside images."""
         if not self.should_save_frame(len(detections)):
             return False
 
-        filename = f"frame_{frame_id:06d}.jpg"
-        input_path = self.input_dir / filename
-        annotated_path = self.annotated_dir / filename
+        filename_base = f"frame_{frame_id:06d}"
+        input_path = self.input_dir / f"{filename_base}.jpg"
+        annotated_path = self.annotated_dir / f"{filename_base}.jpg"
+        json_path = self.annotated_dir / f"{filename_base}.json"
 
         # 1. Save original input image
         cv2.imwrite(str(input_path), original_bgr, [cv2.IMWRITE_JPEG_QUALITY, 90])
 
-        # 2. Draw annotations and save
-        total_lat = latency_dict.get("total_ms", 0.0)
-        annotated_bgr = self.draw_annotations(original_bgr, detections, fps, total_lat)
-        cv2.imwrite(str(annotated_path), annotated_bgr, [cv2.IMWRITE_JPEG_QUALITY, 90])
+        # 2. Save annotated debug frame
+        if annotated_bgr is not None:
+            out_annotated = annotated_bgr
+        else:
+            total_lat = latency_dict.get("total_pipeline_ms", latency_dict.get("total_ms", 0.0))
+            out_annotated = self.draw_annotations(original_bgr, detections, fps, total_lat)
+        cv2.imwrite(str(annotated_path), out_annotated, [cv2.IMWRITE_JPEG_QUALITY, 90])
 
-        # 3. Log record
+        # 3. Save structured JSON alongside image
+        payload = result_payload or {
+            "frame_id": frame_id,
+            "timestamp": timestamp_client,
+            "fps": round(fps, 1),
+            "latency": latency_dict,
+            "objects": detections,
+            "events": []
+        }
+        try:
+            with open(json_path, "w", encoding="utf-8") as jf:
+                json.dump(payload, jf, indent=2)
+        except Exception as e:
+            print(f"[Session Recorder] Warning saving frame json: {e}")
+
+        # 4. Log summary in session record
         record = {
             "frame_id": frame_id,
             "timestamp": timestamp_client,
             "fps": round(fps, 1),
-            "inference_ms": latency_dict.get("inference_ms", 0.0),
-            "total_latency_ms": total_lat,
+            "latency": latency_dict,
             "detection_count": len(detections),
-            "detections": detections,
-            "input": f"input/{filename}",
-            "annotated": f"annotated/{filename}"
+            "objects": payload.get("objects", []),
+            "events": payload.get("events", []),
+            "input": f"input/{filename_base}.jpg",
+            "annotated": f"annotated/{filename_base}.jpg",
+            "metadata_json": f"annotated/{filename_base}.json"
         }
         self.saved_records.append(record)
         self.saved_frames_count += 1

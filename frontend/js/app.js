@@ -997,54 +997,117 @@ class App {
       canvas.height = res;
     }
 
-    this.renderDetections(ctx, res, res, msg.detections);
+    const objects = msg.objects || msg.detections || [];
+    this.renderDetections(ctx, res, res, objects);
 
     this.elements.hudFps.textContent = msg.fps !== undefined ? msg.fps.toFixed(1) : "0.0";
-    this.elements.hudObjects.textContent = msg.count !== undefined ? msg.count : (msg.detections ? msg.detections.length : 0);
+    this.elements.hudObjects.textContent = msg.count !== undefined ? msg.count : objects.length;
 
     const lat = msg.latency || {};
-    if (this.elements.hudYoloInf) this.elements.hudYoloInf.textContent = `${lat.inference_ms || 0}ms`;
-    if (this.elements.hudDepthInf) this.elements.hudDepthInf.textContent = "N/A";
-    if (this.elements.hudDepthFpsBadge) this.elements.hudDepthFpsBadge.style.display = "none";
+    if (this.elements.hudYoloInf) {
+      const yLat = lat.yolo_ms !== undefined ? lat.yolo_ms : (lat.inference_ms || 0);
+      this.elements.hudYoloInf.textContent = `${yLat}ms`;
+    }
+    if (this.elements.hudDepthInf) {
+      const dLat = lat.depth_ms !== undefined ? lat.depth_ms : 0;
+      this.elements.hudDepthInf.textContent = dLat > 0 ? `${dLat}ms` : "N/A";
+    }
+    if (this.elements.hudDepthFpsBadge) {
+      this.elements.hudDepthFpsBadge.style.display = lat.depth_ms > 0 ? "inline" : "none";
+    }
+
+    // Handle guidance events from PC backend
+    if (msg.events && msg.events.length > 0) {
+      const topEvent = msg.events[0];
+      if (this.elements.navBanner && this.elements.navBannerText) {
+        this.elements.navBannerText.textContent = topEvent.priority === "CRITICAL"
+          ? `⚠️ ${topEvent.message}`
+          : topEvent.message;
+        this.elements.navBanner.classList.toggle("hazard", topEvent.priority === "CRITICAL" || topEvent.priority === "HIGH");
+      }
+      this.navigationState.speak(topEvent.message, topEvent.priority);
+    } else if (objects.length > 0) {
+      const topObj = objects[0];
+      if (topObj.priority === "CRITICAL" || topObj.priority === "HIGH") {
+        const msgText = this.navigationState.generateGuidanceMessage(topObj);
+        if (this.elements.navBanner && this.elements.navBannerText) {
+          this.elements.navBannerText.textContent = topObj.priority === "CRITICAL" ? `⚠️ ${msgText}` : msgText;
+          this.elements.navBanner.classList.add("hazard");
+        }
+      }
+    } else {
+      if (this.elements.navBanner && this.elements.navBannerText) {
+        this.elements.navBannerText.textContent = "Path Clear";
+        this.elements.navBanner.classList.remove("hazard");
+      }
+    }
   }
 
   /**
-   * Universal 1:1 detection renderer for bounding boxes, class names, and metric distances.
+   * Universal 1:1 detection renderer for bounding boxes, corridor, risk priority, and metric distances.
    */
   renderDetections(ctx, width, height, detections) {
     ctx.clearRect(0, 0, width, height);
+
+    // 1. Draw walking corridor trapezoid reference overlay
+    ctx.save();
+    ctx.setLineDash([4, 4]);
+    ctx.strokeStyle = "rgba(56, 189, 248, 0.25)";
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    const topY = height * 0.45;
+    const botY = height * 1.0;
+    const topHW = (width * 0.30) / 2.0;
+    const botHW = (width * 0.80) / 2.0;
+    const cx = width / 2.0;
+    ctx.moveTo(cx - topHW, topY);
+    ctx.lineTo(cx + topHW, topY);
+    ctx.lineTo(cx + botHW, botY);
+    ctx.lineTo(cx - botHW, botY);
+    ctx.closePath();
+    ctx.stroke();
+    ctx.restore();
+
     if (!detections || detections.length === 0) return;
 
     const baseUnit = Math.max(0.7, width / 480);
-    const fontSize = Math.max(12, Math.round(14 * baseUnit));
+    const fontSize = Math.max(11, Math.round(13 * baseUnit));
     ctx.font = `bold ${fontSize}px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif`;
     ctx.textBaseline = "top";
 
-    const lineWidth = Math.max(2, Math.round(3 * baseUnit));
-    const labelHeight = Math.round(24 * baseUnit);
+    const lineWidth = Math.max(2, Math.round(2.5 * baseUnit));
+    const labelHeight = Math.round(22 * baseUnit);
 
     for (const det of detections) {
-      const [x1, y1, x2, y2] = det.box;
+      const b = det.bbox || det.box;
+      if (!b || b.length < 4) continue;
+      const [x1, y1, x2, y2] = b;
       const boxW = Math.max(0, x2 - x1);
       const boxH = Math.max(0, y2 - y1);
 
-      const className = det.className || det.class_name || "Object";
+      const className = det.className || det.class || det.class_name || "Object";
       const score = det.score !== undefined ? det.score : (det.confidence !== undefined ? det.confidence : 0);
+      const priority = det.priority || "LOW";
+      const direction = det.direction || "center";
+      const distCat = det.distance_category || "FAR";
+      const distM = det.distance_m !== undefined ? det.distance_m : det.estimated_distance;
+      const risk = det.risk !== undefined ? det.risk : null;
 
-      // Color palette based on hazard level
-      let strokeColor = "#38bdf8";
-      const dist = det.estimated_distance;
-      if (dist !== null && dist !== undefined && dist <= 1.5) {
-        strokeColor = "#ef4444"; // Dangerously close
-      } else if (dist !== null && dist !== undefined && dist <= 3.0) {
-        strokeColor = "#f59e0b"; // Caution
-      } else {
-        const lowerName = className.toLowerCase();
-        if (lowerName.includes("stairs") || lowerName.includes("manhole")) {
-          strokeColor = "#ef4444";
-        } else if (lowerName.includes("car") || lowerName.includes("person") || lowerName.includes("bike")) {
-          strokeColor = "#10b981";
-        }
+      // Priority-driven color palette
+      let strokeColor = "#10b981"; // LOW / default green
+      let textColor = "#000000";
+      if (priority === "CRITICAL") {
+        strokeColor = "#ef4444"; // Vivid Red
+        textColor = "#ffffff";
+      } else if (priority === "HIGH") {
+        strokeColor = "#f59e0b"; // Vibrant Amber
+        textColor = "#000000";
+      } else if (priority === "MEDIUM") {
+        strokeColor = "#38bdf8"; // Cyan
+        textColor = "#000000";
+      } else if (priority === "IGNORE") {
+        strokeColor = "#64748b"; // Muted Slate
+        textColor = "#ffffff";
       }
 
       // Draw bounding box
@@ -1052,18 +1115,20 @@ class App {
       ctx.strokeStyle = strokeColor;
       ctx.strokeRect(x1, y1, boxW, boxH);
 
-      // Label: CLASS SCORE • DISTANCE
-      const distLabel = det.distance_label ? ` • ${det.distance_label}` : "";
-      const labelText = `${className.toUpperCase()} ${(score * 100).toFixed(0)}%${distLabel}`;
+      // Label: CLASS CONF% • DIR • CAT (DISTm) • Risk: R
+      const distPart = distM !== null && distM !== undefined ? `${distCat} (${Number(distM).toFixed(1)}m)` : distCat;
+      const riskPart = risk !== null ? ` • R:${Number(risk).toFixed(2)}` : "";
+      const labelText = `${className.toUpperCase()} ${(score * 100).toFixed(0)}% • ${direction} • ${distPart}${riskPart}`;
       const textWidth = ctx.measureText(labelText).width;
 
       // Label background banner
+      const bannerY = Math.max(0, y1 - labelHeight);
       ctx.fillStyle = strokeColor;
-      ctx.fillRect(x1, Math.max(0, y1 - labelHeight), textWidth + 12, labelHeight);
+      ctx.fillRect(x1, bannerY, textWidth + 10, labelHeight);
 
       // Label text
-      ctx.fillStyle = "#000000";
-      ctx.fillText(labelText, x1 + 6, Math.max(0, y1 - labelHeight) + 4);
+      ctx.fillStyle = textColor;
+      ctx.fillText(labelText, x1 + 5, bannerY + 4);
     }
   }
 }
