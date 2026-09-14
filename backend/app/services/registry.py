@@ -216,21 +216,25 @@ KNOWN_MODELS = [
     },
     {
         "id": "yolo26n_depth",
-        "name": "📦 YOLO26 Nano Depth (Official YOLO Depth - 20MB)",
+        "name": "📐 YOLO26-Depth (512 Quality / 320 Fast)",
         "category": "depth_model",
         "task": "depth",
         "variant": "n",
         "run_id": None,
-        "source_path": settings.WEIGHTS_DIR / "depth" / "yolo26n_depth.onnx",
+        "source_path": settings.NAVIGATION_DIR / "Edge_Inference" / "models" / "depth" / "depth_512.onnx",
         "classes": [],
-        "resolutions": [768],
+        "resolutions": [512, 320],
+        "default_resolution": 512,
         "input_tensor_name": "images",
         "output_tensor_name": "depth",
-        "output_shape": [1, 1, 768, 768],
+        "output_shape": [1, 1, 512, 512],
         "mean": [0.0, 0.0, 0.0],
         "std": [255.0, 255.0, 255.0],
         "is_metric": True,
-        "cdn_url": "https://raw.githubusercontent.com/Ashutosh-Ranjan310106/yolo-model-edge-inference/main/models/yolo26n_depth.onnx"
+        "cdn_urls": {
+            512: "https://raw.githubusercontent.com/Ashutosh-Ranjan310106/yolo-model-edge-inference/main/models/depth/depth_512.onnx",
+            320: "https://raw.githubusercontent.com/Ashutosh-Ranjan310106/yolo-model-edge-inference/main/models/depth/depth_320.onnx"
+        }
     }
 ]
 
@@ -289,6 +293,10 @@ class ModelRegistryService:
             self.mobile_dir / "depth" / f"{model_id}_{resolution}.{format}",
             self.weights_dir / "depth" / f"{model_id}.{format}",
             self.weights_dir / "depth" / f"{model_id}_{resolution}.{format}",
+            # Models directory (depth_512.onnx, depth_320.onnx)
+            settings.NAVIGATION_DIR / "Edge_Inference" / "models" / "depth" / f"depth_{resolution}.{format}",
+            settings.NAVIGATION_DIR / "models" / "depth" / f"depth_{resolution}.{format}",
+            self.weights_dir / "depth" / f"depth_{resolution}.{format}",
             # Standard aliases
             self.mobile_dir / f"official_{model_id}_{resolution}.{format}",
             self.mobile_dir / f"base_{model_id}_{resolution}.{format}",
@@ -476,7 +484,10 @@ class ModelRegistryService:
         if is_depth:
             input_tensor_name = cfg.get("input_tensor_name", "pixel_values")
             output_tensor_name = cfg.get("output_tensor_name", "predicted_depth")
-            out_shape = cfg.get("output_shape", [1, resolution, resolution])
+            if "yolo" in model_id.lower():
+                out_shape = [1, 1, resolution, resolution]
+            else:
+                out_shape = cfg.get("output_shape", [1, resolution, resolution])
             mean_vals = cfg.get("mean", [0.485, 0.456, 0.406])
             std_vals = cfg.get("std", [0.229, 0.224, 0.225])
             classes_count = 0

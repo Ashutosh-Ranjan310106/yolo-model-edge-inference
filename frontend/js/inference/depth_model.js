@@ -28,6 +28,7 @@ export class DepthModel {
     this.depthHeight = 518;
     this.minDepth = 0;
     this.maxDepth = 10;
+    this.letterboxInfo = null;
   }
 
   async load(arrayBuffer, metadata = {}) {
@@ -116,10 +117,12 @@ export class DepthModel {
     return new ort.Tensor("float32", dst, this.inputShape);
   }
 
-  async predict(imageData) {
+  async predict(imageData, letterboxInfo = null) {
     if (!this.session || !this.isLoaded) {
       return null;
     }
+
+    this.letterboxInfo = letterboxInfo;
 
     const tStart = performance.now();
 
@@ -209,6 +212,19 @@ export class DepthModel {
   getMedianDepthInROI(x1Norm, y1Norm, x2Norm, y2Norm) {
     if (!this.latestDepthMap) return null;
 
+    // If frame was letterboxed, map camera coordinates (0..1) to the active unpadded tensor region
+    if (this.letterboxInfo) {
+      const { padX, padY, newW, newH, targetSize } = this.letterboxInfo;
+      const tX1 = (padX + x1Norm * newW) / targetSize;
+      const tX2 = (padX + x2Norm * newW) / targetSize;
+      const tY1 = (padY + y1Norm * newH) / targetSize;
+      const tY2 = (padY + y2Norm * newH) / targetSize;
+      x1Norm = Math.max(0, Math.min(1, tX1));
+      x2Norm = Math.max(0, Math.min(1, tX2));
+      y1Norm = Math.max(0, Math.min(1, tY1));
+      y2Norm = Math.max(0, Math.min(1, tY2));
+    }
+
     const w = this.depthWidth;
     const h = this.depthHeight;
 
@@ -251,8 +267,22 @@ export class DepthModel {
   }
 
   /**
+   * Sample dense depth across Left, Center, and Right sectors for navigation surfaces (walls, floors, obstacles)
+   */
+  getSectorDepths() {
+    if (!this.latestDepthMap) return { left: null, center: null, right: null };
+    const yTop = 0.35;
+    const yBottom = 0.90;
+    return {
+      left: this.getMedianDepthInROI(0.05, yTop, 0.35, yBottom),
+      center: this.getMedianDepthInROI(0.35, yTop, 0.65, yBottom),
+      right: this.getMedianDepthInROI(0.65, yTop, 0.95, yBottom)
+    };
+  }
+
+  /**
    * Render colorized depth map overlay onto an HTML5 canvas.
-   * Turbo / Inferno color ramp: Close (red/orange) -> Mid (yellow/green) -> Far (blue/purple).
+   * Accurately unletterboxes to camera aspect ratio (e.g. 16:9) without stretching.
    */
   renderColorMap(targetCanvas, alpha = 0.6) {
     if (!this.latestDepthMap || !targetCanvas) return;
@@ -260,13 +290,16 @@ export class DepthModel {
     const w = this.depthWidth;
     const h = this.depthHeight;
 
-    if (targetCanvas.width !== w || targetCanvas.height !== h) {
-      targetCanvas.width = w;
-      targetCanvas.height = h;
+    if (!this._colorCanvas) {
+      this._colorCanvas = document.createElement("canvas");
+    }
+    if (this._colorCanvas.width !== w || this._colorCanvas.height !== h) {
+      this._colorCanvas.width = w;
+      this._colorCanvas.height = h;
     }
 
-    const ctx = targetCanvas.getContext("2d");
-    const imgData = ctx.createImageData(w, h);
+    const cCtx = this._colorCanvas.getContext("2d");
+    const imgData = cCtx.createImageData(w, h);
     const buf = imgData.data;
 
     const minD = this.minDepth;
@@ -278,11 +311,8 @@ export class DepthModel {
 
     for (let i = 0; i < map.length; i++) {
       const d = map[i];
-      // Normalize: 0 = close, 1 = far
       const norm = Math.max(0, Math.min(1, (d - minD) / range));
       
-      // Color ramp: close (hot) -> far (cool)
-      // Turbo-like gradient
       const r = Math.round(Math.sin((1.0 - norm) * Math.PI * 0.8) * 255);
       const g = Math.round(Math.sin((1.0 - norm) * Math.PI * 1.5) * 255);
       const b = Math.round(Math.sin(norm * Math.PI * 0.8) * 255);
@@ -294,7 +324,18 @@ export class DepthModel {
       buf[idx + 3] = alphaInt;
     }
 
-    ctx.putImageData(imgData, 0, 0);
+    cCtx.putImageData(imgData, 0, 0);
+
+    const ctx = targetCanvas.getContext("2d");
+    ctx.clearRect(0, 0, targetCanvas.width, targetCanvas.height);
+
+    if (this.letterboxInfo) {
+      // Unletterbox: map only active image area onto camera canvas (strips out padding)
+      const { padX, padY, newW, newH } = this.letterboxInfo;
+      ctx.drawImage(this._colorCanvas, padX, padY, newW, newH, 0, 0, targetCanvas.width, targetCanvas.height);
+    } else {
+      ctx.drawImage(this._colorCanvas, 0, 0, targetCanvas.width, targetCanvas.height);
+    }
   }
 
   dispose() {

@@ -77,6 +77,14 @@
         </select>
       </div>
 
+      <div class="form-group" id="depth-resolution-group">
+        <label for="depth-resolution-select">Depth Resolution / Mode</label>
+        <select id="depth-resolution-select">
+          <option value="512" selected>512 × 512 (Quality Mode — Default)</option>
+          <option value="320">320 × 320 (Speed / Battery Mode — Fast)</option>
+        </select>
+      </div>
+
       <div class="form-group">
         <label for="resolution-select">YOLO Input Resolution</label>
         <select id="resolution-select">
@@ -121,6 +129,10 @@
         <div class="status-row" style="margin-top: 8px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 8px;">
           <span>Depth Model:</span>
           <b id="status-depth-name">—</b>
+        </div>
+        <div class="status-row">
+          <span>Depth Resolution:</span>
+          <b id="status-depth-res">512 × 512</b>
         </div>
         <div class="status-row">
           <span>Depth Size:</span>
@@ -227,6 +239,17 @@
           L:<b id="hud-sec-left">—</b> C:<b id="hud-sec-center">—</b> R:<b id="hud-sec-right">—</b>
         </span>
       </div>
+
+      <!-- Depth Benchmark & Diagnostics Display -->
+      <div id="hud-depth-benchmark-pill" class="hud-latency-pill" style="font-size: 0.68rem; background: rgba(15, 23, 42, 0.92); border-color: #3b82f6; margin-top: 4px; display: flex; flex-wrap: wrap; gap: 8px;">
+        <span>Mode: <b id="dbg-depth-res" style="color: #60a5fa;">512p Quality</b></span>
+        <span>Depth Lat: <b id="dbg-depth-lat">0ms</b></span>
+        <span>Depth FPS: <b id="dbg-depth-fps">0.0</b></span>
+        <span>E2E: <b id="dbg-e2e-lat">0ms</b></span>
+        <span>Load: <b id="dbg-load-time">0ms</b></span>
+        <span>Drop: <b id="dbg-dropped">0</b></span>
+        <span>EP: <b id="dbg-provider">WASM</b></span>
+      </div>
     </div>
 
     <!-- 1:1 Square Viewport (Automatic 1:1 center-cropped display) -->
@@ -246,6 +269,9 @@
 
     <!-- Floating HUD Bottom Controls -->
     <div class="hud-bottom-bar">
+      <button id="btn-switch-depth-res" class="btn-toggle-depth" style="background: rgba(59, 130, 246, 0.25); border-color: #3b82f6;">
+        <span id="btn-switch-depth-res-text">⚡ 512p (QUALITY)</span>
+      </button>
       <button id="btn-toggle-depth" class="btn-toggle-depth">
         <span>🗺️ DEPTH: OFF</span>
       </button>
@@ -256,6 +282,6 @@
   </section>
 
   <!-- App Controller Script -->
-  <script type="module" src="js/app.js?v=4.7"></script>
+  <script type="module" src="js/app.js?v=4.8"></script>
 </body>
 </html>

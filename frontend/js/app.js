@@ -5,14 +5,14 @@
  * -> Spatial Fusion -> Temporal Tracker -> Navigation State -> Live UI Viewport
  */
 
-import { ModelRegistryAPI } from "./api.js?v=4.7";
-import { modelCache } from "./cache.js?v=4.7";
-import { MobileCameraManager } from "./camera.js?v=4.7";
-import { ModelManager } from "./inference/model_manager.js?v=4.7";
-import { SpatialDepthFusion } from "./fusion/spatial_fusion.js?v=4.7";
-import { TemporalTracker } from "./tracking/temporal_tracker.js?v=4.7";
-import { NavigationState } from "./navigation/navigation_state.js?v=4.7";
-import { pcClient } from "./pc_client.js?v=4.7";
+import { ModelRegistryAPI } from "./api.js?v=4.8";
+import { modelCache } from "./cache.js?v=4.8";
+import { MobileCameraManager } from "./camera.js?v=4.8";
+import { ModelManager } from "./inference/model_manager.js?v=4.8";
+import { SpatialDepthFusion } from "./fusion/spatial_fusion.js?v=4.8";
+import { TemporalTracker } from "./tracking/temporal_tracker.js?v=4.8";
+import { NavigationState } from "./navigation/navigation_state.js?v=4.8";
+import { pcClient } from "./pc_client.js?v=4.8";
 
 class App {
   constructor() {
@@ -39,6 +39,7 @@ class App {
     this.selectedModel = null;      // YOLO model
     this.selectedDepthModel = null; // Depth model
     this.selectedResolution = 480;
+    this.selectedDepthResolution = 512; // 512 Quality (Default) or 320 Speed
     this.confThreshold = 0.25;
 
     // Live display controls
@@ -94,6 +95,7 @@ class App {
       statusFileSize: document.getElementById("status-file-size"),
 
       statusDepthName: document.getElementById("status-depth-name"),
+      statusDepthRes: document.getElementById("status-depth-res"),
       statusDepthSize: document.getElementById("status-depth-size"),
       statusDepthCacheState: document.getElementById("status-depth-cache-state"),
 
@@ -128,7 +130,20 @@ class App {
       hudDepthFpsBadge: document.getElementById("hud-depth-fps-badge"),
       hudSecLeft: document.getElementById("hud-sec-left"),
       hudSecCenter: document.getElementById("hud-sec-center"),
-      hudSecRight: document.getElementById("hud-sec-right")
+      hudSecRight: document.getElementById("hud-sec-right"),
+
+      // Depth Resolution & Benchmark elements
+      depthResolutionSelect: document.getElementById("depth-resolution-select"),
+      depthResolutionGroup: document.getElementById("depth-resolution-group"),
+      dbgDepthRes: document.getElementById("dbg-depth-res"),
+      dbgDepthLat: document.getElementById("dbg-depth-lat"),
+      dbgDepthFps: document.getElementById("dbg-depth-fps"),
+      dbgE2eLat: document.getElementById("dbg-e2e-lat"),
+      dbgLoadTime: document.getElementById("dbg-load-time"),
+      dbgDropped: document.getElementById("dbg-dropped"),
+      dbgProvider: document.getElementById("dbg-provider"),
+      btnSwitchDepthRes: document.getElementById("btn-switch-depth-res"),
+      btnSwitchDepthResText: document.getElementById("btn-switch-depth-res-text")
     };
   }
 
@@ -140,6 +155,14 @@ class App {
     this.elements.modelSelect.addEventListener("change", () => this.onYoloModelChanged());
     this.elements.depthModelSelect.addEventListener("change", () => this.onDepthModelChanged());
     this.elements.resolutionSelect.addEventListener("change", () => this.onResolutionChanged());
+
+    if (this.elements.depthResolutionSelect) {
+      this.elements.depthResolutionSelect.addEventListener("change", (e) => this.onDepthResolutionChanged(parseInt(e.target.value, 10)));
+    }
+
+    if (this.elements.btnSwitchDepthRes) {
+      this.elements.btnSwitchDepthRes.addEventListener("click", () => this.switchDepthResolution());
+    }
 
     this.elements.confSlider.addEventListener("input", (e) => {
       this.confThreshold = parseFloat(e.target.value);
@@ -248,9 +271,17 @@ class App {
     return `${this.selectedModel.id}_${this.selectedResolution}`;
   }
 
+  getDepthResolution() {
+    if (!this.selectedDepthModel) return 512;
+    if (this.selectedDepthModel.supported_resolutions && this.selectedDepthModel.supported_resolutions.length > 1) {
+      return this.selectedDepthResolution || 512;
+    }
+    return this.selectedDepthModel.resolution || (this.selectedDepthModel.supported_resolutions ? this.selectedDepthModel.supported_resolutions[0] : 512);
+  }
+
   getDepthCacheKey() {
     if (!this.selectedDepthModel) return "";
-    const res = this.selectedDepthModel.resolution || (this.selectedDepthModel.supported_resolutions ? this.selectedDepthModel.supported_resolutions[0] : 518);
+    const res = this.getDepthResolution();
     return `${this.selectedDepthModel.id}_${res}`;
   }
 
@@ -357,7 +388,63 @@ class App {
   async onDepthModelChanged() {
     const id = this.elements.depthModelSelect.value;
     this.selectedDepthModel = this.depthModels.find(m => m.id === id) || null;
+
+    if (this.selectedDepthModel && this.selectedDepthModel.supported_resolutions && this.selectedDepthModel.supported_resolutions.length > 1) {
+      if (this.elements.depthResolutionGroup) {
+        this.elements.depthResolutionGroup.style.display = "block";
+      }
+      if (this.elements.depthResolutionSelect) {
+        this.elements.depthResolutionSelect.value = String(this.selectedDepthResolution || 512);
+      }
+    } else {
+      if (this.elements.depthResolutionGroup) {
+        this.elements.depthResolutionGroup.style.display = "none";
+      }
+    }
     await this.updateModelStatusDisplay();
+  }
+
+  async onDepthResolutionChanged(newRes) {
+    this.selectedDepthResolution = parseInt(newRes, 10) || 512;
+    console.log(`[ROD App] Depth resolution set to: ${this.selectedDepthResolution}x${this.selectedDepthResolution}`);
+
+    if (this.elements.depthResolutionSelect) {
+      this.elements.depthResolutionSelect.value = String(this.selectedDepthResolution);
+    }
+    if (this.elements.btnSwitchDepthResText) {
+      this.elements.btnSwitchDepthResText.textContent = `${this.selectedDepthResolution}p`;
+    }
+    await this.updateModelStatusDisplay();
+
+    // If live inference is running on edge, reload depth model on the fly
+    if (this.isInferenceRunning && this.inferenceMode === "edge" && this.selectedDepthModel) {
+      await this.reloadDepthModelOnTheFly();
+    }
+  }
+
+  async switchDepthResolution() {
+    const nextRes = this.selectedDepthResolution === 512 ? 320 : 512;
+    await this.onDepthResolutionChanged(nextRes);
+  }
+
+  async reloadDepthModelOnTheFly() {
+    const depthKey = this.getDepthCacheKey();
+    const cachedDepth = await modelCache.getModel(depthKey);
+    const depthRes = this.getDepthResolution();
+    if (cachedDepth) {
+      let depthMeta = {};
+      try {
+        depthMeta = await this.api.getModelMetadata(this.selectedDepthModel.id, depthRes);
+      } catch (e) {
+        depthMeta = (cachedDepth && cachedDepth.metadata) || { id: this.selectedDepthModel.id, resolution: depthRes };
+      }
+      depthMeta.resolution = depthRes;
+      await this.modelManager.loadDepthModel(cachedDepth.buffer, depthMeta);
+      console.log(`[ROD App] Switched depth model to ${depthRes}x${depthRes} on the fly.`);
+    } else {
+      console.warn(`[ROD App] Depth model for resolution ${depthRes} not cached.`);
+      alert(`Depth model for ${depthRes}×${depthRes} is not cached! Please download it from Setup first.`);
+    }
   }
 
   async onResolutionChanged() {
@@ -400,20 +487,24 @@ class App {
     // Check Depth model cache
     let isDepthCached = false;
     if (this.selectedDepthModel) {
+      const depthRes = this.getDepthResolution();
       const depthKey = this.getDepthCacheKey();
       this.elements.statusDepthName.textContent = this.selectedDepthModel.name || this.selectedDepthModel.id;
+      if (this.elements.statusDepthRes) {
+        this.elements.statusDepthRes.textContent = `${depthRes} × ${depthRes}`;
+      }
       this.elements.statusDepthSize.textContent = `${this.selectedDepthModel.file_size_mb} MB`;
 
       isDepthCached = await modelCache.hasModel(depthKey);
       if (isDepthCached) {
-        this.elements.statusDepthCacheState.textContent = "✓ Cached on Phone";
+        this.elements.statusDepthCacheState.textContent = `✓ Cached (${depthRes}p)`;
         this.elements.statusDepthCacheState.style.color = "#10b981";
-        this.elements.btnDownloadDepth.textContent = "✓ Depth Ready";
+        this.elements.btnDownloadDepth.textContent = `✓ Depth Ready (${depthRes}p)`;
         this.elements.btnDownloadDepth.disabled = false;
       } else {
-        this.elements.statusDepthCacheState.textContent = "Not downloaded";
+        this.elements.statusDepthCacheState.textContent = `Not downloaded (${depthRes}p)`;
         this.elements.statusDepthCacheState.style.color = "#f59e0b";
-        this.elements.btnDownloadDepth.textContent = `⬇ Download Depth (${this.selectedDepthModel.file_size_mb} MB)`;
+        this.elements.btnDownloadDepth.textContent = `⬇ Download Depth ${depthRes}p (${this.selectedDepthModel.file_size_mb} MB)`;
         this.elements.btnDownloadDepth.disabled = false;
       }
     } else {
@@ -444,7 +535,7 @@ class App {
   async downloadSelectedDepthModel() {
     if (!this.selectedDepthModel) return;
     const modelId = this.selectedDepthModel.id;
-    const res = this.selectedDepthModel.resolution || (this.selectedDepthModel.supported_resolutions ? this.selectedDepthModel.supported_resolutions[0] : 518);
+    const res = this.getDepthResolution();
     const cacheKey = this.getDepthCacheKey();
     let cdnUrl = null;
     if (this.selectedDepthModel.cdn_urls && this.selectedDepthModel.cdn_urls[res]) {
@@ -577,16 +668,17 @@ class App {
       const cachedDepth = await modelCache.getModel(depthKey);
       if (cachedDepth) {
         let depthMeta = {};
-        const depthRes = this.selectedDepthModel.resolution || (this.selectedDepthModel.supported_resolutions ? this.selectedDepthModel.supported_resolutions[0] : (this.selectedDepthModel.id.includes("yolo") ? 768 : 518));
+        const depthRes = this.getDepthResolution();
         try {
           depthMeta = await this.api.getModelMetadata(this.selectedDepthModel.id, depthRes);
         } catch (e) {
           depthMeta = (cachedDepth && cachedDepth.metadata) || { id: this.selectedDepthModel.id, resolution: depthRes };
         }
+        depthMeta.resolution = depthRes;
 
         loadTasks.push((async () => {
           await this.modelManager.loadDepthModel(cachedDepth.buffer, depthMeta);
-          console.log(`[ROD App] Depth model ${this.selectedDepthModel.id} loaded successfully.`);
+          console.log(`[ROD App] Depth model ${this.selectedDepthModel.id} (${depthRes}p) loaded successfully.`);
         })());
       } else {
         console.log("[ROD App] Depth model not cached; continuing with YOLO + bounding box heuristic.");
@@ -607,7 +699,7 @@ class App {
     this.elements.liveScreen.classList.remove("hidden");
 
     // 5. Update HUD tags
-    const depthTag = this.modelManager.hasDepth() ? "+ DEPTH" : "(BBox Dist)";
+    const depthTag = this.modelManager.hasDepth() ? `+ DEPTH (${this.getDepthResolution()}p)` : "(BBox Dist)";
     this.elements.hudModelTag.textContent = `${this.selectedModel.id} ${depthTag}`;
     this.elements.hudProvider.textContent = this.modelManager.stats.yoloProvider.toUpperCase();
 
@@ -692,8 +784,8 @@ class App {
 
   /**
    * Phone Edge Continuous Pipeline Loop:
-   * 1. Captures live camera square frames (~30 FPS).
-   * 2. Asynchronously triggers YOLO (~12 FPS) and Depth (~6 FPS).
+   * 1. Captures live camera square frames (~30 FPS) and letterbox frame for depth.
+   * 2. Asynchronously triggers YOLO (~12 FPS) and Depth (~6–15 FPS).
    * 3. Performs Spatial Fusion (Median depth extraction + Sector hazards).
    * 4. Stabilizes tracks & smooths distance via TemporalTracker.
    * 5. Formulates Navigation Scene State.
@@ -703,7 +795,6 @@ class App {
     if (!this.isInferenceRunning) return;
 
     const yoloRes = this.selectedResolution || 480;
-    const depthRes = (this.selectedDepthModel && this.selectedDepthModel.resolution) ? this.selectedDepthModel.resolution : 518;
 
     const canvas = this.elements.overlayCanvas;
     const ctx = canvas.getContext("2d");
@@ -735,11 +826,12 @@ class App {
         // Dispatches YOLO inference if worker is free and interval passed
         this.modelManager.maybeRunYolo(yoloFrameData, yoloRes, yoloRes, this.confThreshold);
 
-        // Dispatches Depth inference if worker is free and interval passed
+        // Dispatches Depth inference with neutral gray letterboxing to preserve native 16:9 aspect ratio
         if (this.modelManager.hasDepth()) {
-          const depthFrameData = this.camera.captureSquareFrame(depthRes);
-          if (depthFrameData) {
-            this.modelManager.maybeRunDepth(depthFrameData);
+          const depthRes = this.getDepthResolution();
+          const depthFrame = this.camera.captureLetterboxFrame(depthRes);
+          if (depthFrame) {
+            this.modelManager.maybeRunDepth(depthFrame.imageData, depthFrame.letterboxInfo);
           }
         }
 
@@ -825,6 +917,34 @@ class App {
       }
     }
 
+    // Benchmark & Diagnostic HUD metrics
+    if (this.elements.dbgDepthRes) {
+      this.elements.dbgDepthRes.textContent = `${this.modelManager.stats.depthResolution || this.selectedDepthResolution}p`;
+    }
+    if (this.elements.dbgDepthLat) {
+      this.elements.dbgDepthLat.textContent = `${this.modelManager.stats.depthLatencyMs}ms`;
+    }
+    if (this.elements.dbgDepthFps) {
+      this.elements.dbgDepthFps.textContent = this.modelManager.stats.depthFps > 0
+        ? this.modelManager.stats.depthFps.toFixed(1)
+        : "—";
+    }
+    if (this.elements.dbgE2eLat) {
+      this.elements.dbgE2eLat.textContent = `${this.modelManager.stats.e2eLatencyMs}ms`;
+    }
+    if (this.elements.dbgLoadTime) {
+      this.elements.dbgLoadTime.textContent = `${this.modelManager.stats.depthLoadTimeMs}ms`;
+    }
+    if (this.elements.dbgDropped) {
+      this.elements.dbgDropped.textContent = this.modelManager.stats.depthDroppedFrames;
+    }
+    if (this.elements.dbgProvider) {
+      this.elements.dbgProvider.textContent = (this.modelManager.stats.depthProvider || "WASM").toUpperCase();
+    }
+    if (this.elements.btnSwitchDepthResText) {
+      this.elements.btnSwitchDepthResText.textContent = `${this.modelManager.stats.depthResolution || this.selectedDepthResolution}p`;
+    }
+
     if (sectors) {
       if (this.elements.hudSecLeft) this.elements.hudSecLeft.textContent = sectors.left.label;
       if (this.elements.hudSecCenter) this.elements.hudSecCenter.textContent = sectors.center.label;
@@ -833,7 +953,6 @@ class App {
       if (this.elements.hudSecCenter) {
         this.elements.hudSecCenter.style.color = sectors.center.has_obstacle ? "#ef4444" : "#f8fafc";
       }
-    }
   }
 
   /**

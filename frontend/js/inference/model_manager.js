@@ -20,7 +20,11 @@ export class ModelManager {
       yoloLatencyMs: 0,
       depthFps: 0,
       depthLatencyMs: 0,
+      depthResolution: 512,
+      depthLoadTimeMs: 0,
+      depthDroppedFrames: 0,
       pipelineLatencyMs: 0,
+      e2eLatencyMs: 0,
       yoloProvider: "wasm",
       depthProvider: "wasm",
       lastError: null
@@ -47,8 +51,12 @@ export class ModelManager {
   }
 
   async loadDepthModel(arrayBuffer, metadata) {
+    const t0 = performance.now();
     const res = await this.depth.load(arrayBuffer, metadata);
+    this.stats.depthLoadTimeMs = Math.round(performance.now() - t0);
     this.stats.depthProvider = res.provider;
+    this.stats.depthResolution = res.resolution || metadata.resolution || 512;
+    this.stats.depthDroppedFrames = 0;
     this.stats.lastError = null;
     return res;
   }
@@ -103,9 +111,15 @@ export class ModelManager {
 
   /**
    * Dispatches Depth inference on a background tick if interval has passed and worker is free.
+   * Implements latest-frame strategy with frame dropping to prevent queue buildup.
    */
-  async maybeRunDepth(imageData) {
-    if (!this.depth.isLoaded || this.isDepthRunning) {
+  async maybeRunDepth(imageData, letterboxInfo = null) {
+    if (!this.depth.isLoaded) {
+      return this.latestDepthResult;
+    }
+
+    if (this.isDepthRunning) {
+      this.stats.depthDroppedFrames++;
       return this.latestDepthResult;
     }
 
@@ -116,12 +130,15 @@ export class ModelManager {
     }
 
     this.isDepthRunning = true;
+    const tStart = performance.now();
     try {
-      const res = await this.depth.predict(imageData);
+      const res = await this.depth.predict(imageData, letterboxInfo);
       if (res) {
         this.latestDepthResult = res;
         this.stats.depthLatencyMs = res.latencyMs;
+        this.stats.e2eLatencyMs = Math.round(performance.now() - tStart);
         this.stats.depthProvider = this.depth.provider;
+        this.stats.depthResolution = this.depth.resolution;
         this.stats.lastError = null;
 
         const delta = now - this.lastDepthRunTime;
