@@ -10,22 +10,26 @@ Designed for real-time obstacle detection and assistive navigation on mobile dev
 
 All models in this repository are publicly accessible worldwide via high-speed CDNs:
 
-| Model ID | Task / Description | Resolution | Size | Direct Raw URL / CDN Link |
-|---|---|---|---|---|
-| **`yolo26n-nav-run6_320`** | YOLO26 Nano (Best 46 Classes) | 320×320 | 9.26 MB | [Download](https://raw.githubusercontent.com/Ashutosh-Ranjan310106/yolo-model-edge-inference/main/models/yolo26n-nav-run6_320.onnx) \| [jsDelivr CDN](https://cdn.jsdelivr.net/gh/Ashutosh-Ranjan310106/yolo-model-edge-inference@main/models/yolo26n-nav-run6_320.onnx) |
-| **`yolo26n-nav-run6_480`** | YOLO26 Nano (Best 46 Classes) | 480×480 | 9.31 MB | [Download](https://raw.githubusercontent.com/Ashutosh-Ranjan310106/yolo-model-edge-inference/main/models/yolo26n-nav-run6_480.onnx) \| [jsDelivr CDN](https://cdn.jsdelivr.net/gh/Ashutosh-Ranjan310106/yolo-model-edge-inference@main/models/yolo26n-nav-run6_480.onnx) |
-| **`yolo26n-24k-nav-run1_320`** | YOLO26 Nano (24k Dataset) | 320×320 | 9.24 MB | [Download](https://raw.githubusercontent.com/Ashutosh-Ranjan310106/yolo-model-edge-inference/main/models/yolo26n-24k-nav-run1_best_320.onnx) \| [jsDelivr CDN](https://cdn.jsdelivr.net/gh/Ashutosh-Ranjan310106/yolo-model-edge-inference@main/models/yolo26n-24k-nav-run1_best_320.onnx) |
-| **`depth_anything_v2_small`** | Depth Anything V2 (INT8 Quantized) | 518×518 | 26.0 MB | [Download](https://raw.githubusercontent.com/Ashutosh-Ranjan310106/yolo-model-edge-inference/main/models/depth_anything_v2_small_quantized.onnx) \| [jsDelivr CDN](https://cdn.jsdelivr.net/gh/Ashutosh-Ranjan310106/yolo-model-edge-inference@main/models/depth_anything_v2_small_quantized.onnx) |
-| **`yolo26n_depth`** | YOLO26 Nano Metric Depth | 768×768 | 19.81 MB | [Download](https://raw.githubusercontent.com/Ashutosh-Ranjan310106/yolo-model-edge-inference/main/models/yolo26n_depth.onnx) \| [jsDelivr CDN](https://cdn.jsdelivr.net/gh/Ashutosh-Ranjan310106/yolo-model-edge-inference@main/models/yolo26n_depth.onnx) |
-| **`yolo26s_depth`** | YOLO26 Small Metric Depth | 768×768 | 45.98 MB | [Download](https://raw.githubusercontent.com/Ashutosh-Ranjan310106/yolo-model-edge-inference/main/models/yolo26s_depth.onnx) \| [jsDelivr CDN](https://cdn.jsdelivr.net/gh/Ashutosh-Ranjan310106/yolo-model-edge-inference@main/models/yolo26s_depth.onnx) |
+| Model ID | User-Facing Name | Resolution | Classes | Size | Direct Raw URL / CDN Link |
+|---|---|---|---|---|---|
+| **`yolo26n_nav_run1_320`** | YOLO26-Nano (Run 1) | 320×320 | 27 | 9.24 MB | [Download](https://raw.githubusercontent.com/Ashutosh-Ranjan310106/yolo-model-edge-inference/main/models/yolo26n_nav_run1_320.onnx) |
+| **`yolo26n_nav_run1_480`** | YOLO26-Nano (Run 1) | 480×480 | 27 | 9.30 MB | [Download](https://raw.githubusercontent.com/Ashutosh-Ranjan310106/yolo-model-edge-inference/main/models/yolo26n_nav_run1_480.onnx) |
+| **`yolo26n_nav_run8_256`** | YOLO26-Nano Fast (Run 8) | 256×256 | 25 | 9.22 MB | [Download](https://raw.githubusercontent.com/Ashutosh-Ranjan310106/yolo-model-edge-inference/main/models/yolo26n_nav_run8_256.onnx) |
+| **`yolo26s_nav_run291_320`** | YOLO26-Small Accurate (Run 291) | 320×320 | 27 | 36.32 MB | [Download](https://raw.githubusercontent.com/Ashutosh-Ranjan310106/yolo-model-edge-inference/main/models/yolo26s_nav_run291_320.onnx) |
+| **`yolo26s_nav_run291_480`** | YOLO26-Small Accurate (Run 291) | 480×480 | 27 | 36.37 MB | [Download](https://raw.githubusercontent.com/Ashutosh-Ranjan310106/yolo-model-edge-inference/main/models/yolo26s_nav_run291_480.onnx) |
+| **`yolo26s_nav_run683_416`** | YOLO26-Small Balanced (Run 683) | 416×416 | 25 | 36.33 MB | [Download](https://raw.githubusercontent.com/Ashutosh-Ranjan310106/yolo-model-edge-inference/main/models/yolo26s_nav_run683_416.onnx) |
+| **`depth_256`** | YOLO26-Depth Metric (Low Power) | 256×256 | Dense | 19.81 MB | [Download](https://raw.githubusercontent.com/Ashutosh-Ranjan310106/yolo-model-edge-inference/main/models/depth/depth_256.onnx) |
+| **`depth_320`** | YOLO26-Depth Metric (Fast) | 320×320 | Dense | 19.81 MB | [Download](https://raw.githubusercontent.com/Ashutosh-Ranjan310106/yolo-model-edge-inference/main/models/depth/depth_320.onnx) |
+| **`depth_512`** | YOLO26-Depth Metric (Quality) | 512×512 | Dense | 19.81 MB | [Download](https://raw.githubusercontent.com/Ashutosh-Ranjan310106/yolo-model-edge-inference/main/models/depth/depth_512.onnx) |
+| **`depth_anything_v2_small`** | Depth Anything V2 (Quantized) | 518×518 | Relative | 26.0 MB | [Download](https://raw.githubusercontent.com/Ashutosh-Ranjan310106/yolo-model-edge-inference/main/models/depth_anything_v2_small_quantized.onnx) |
 
 Full metadata and checksums are recorded in [`models/models_manifest.json`](./models/models_manifest.json).
 
 ---
 
-## 🎯 Custom Navigation Classes (46 Classes)
-`yolo26n-nav-run6` detects the following 46 navigation & obstacle classes:
-1. `Bike` 2. `Building` 3. `Car` 4. `Person` 5. `Stairs` 6. `Traffic sign` 7. `Electrical Pole` 8. `Road` 9. `Motorcycle` 10. `Dustbin` 11. `Dog` 12. `Manhole` 13. `Tree` 14. `Guard rail` 15. `Pedestrian crosswalk` 16. `Truck` 17. `Bus` 18. `Bench` 19. `Traffic Cone` 20. `Fire hydrant` 21. `Teraffic Barrel` 22. `Plant Pot` 23. `Electrical Box` 24. `Chair` 25. `Bicycle Rack` 26. `Door` 27. `Wall` 28. `Bus station` 29. `Barricade` 30. `Table` 31. `Desk` 32. `Bookshelf/Storage` 33. `Window` 34. `Sink` 35. `Toilet` 36. `Sign_Board` 37. `Elevator` 38. `Train` 39. `Cat` 40. `Traffic Light` 41. `Ramp` 42. `Escalator` 43. `Animal` 44. `Computer` 45. `Drawer` 46. `TV`
+## 🎯 Supported Class Sets
+- **27 Classes (`run1` & `run291`)**: Bike, Building, Car, Person, Stairs, Traffic sign, Electrical Pole, Road, Motorcycle, Dustbin, Dog, Manhole, Tree, Guard rail, Pedestrian crosswalk, Truck, Bus, Bench, Traffic Cone, Fire hydrant, Teraffic Barrel, Plant Pot, Electrical Box, Chair, Bicycle Rack, Door, Wall.
+- **25 Classes (`run8` & `run683`)**: Bike/Motorcycle, Building, Vehicle, Person, Stairs, Traffic sign, Electrical Pole, Dustbin, Animal, Manhole, Tree, Guard rail, Pedestrian crosswalk, Bench, Traffic Cone, Teraffic Barrel, Plant Pot, Chair, Door, Table/Desk, Bookshelf/Storage, Window, Sign_Board, Display, Drawer.
 
 ---
 
