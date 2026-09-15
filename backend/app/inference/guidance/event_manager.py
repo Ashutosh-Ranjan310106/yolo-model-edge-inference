@@ -11,7 +11,7 @@ Re-announces only on significant state changes:
 Enforces configurable cooldown timers.
 """
 
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Tuple
 import time
 from app.inference.config import GuidanceConfig, pipeline_config
 from app.inference.guidance.guidance_generator import GuidanceGenerator
