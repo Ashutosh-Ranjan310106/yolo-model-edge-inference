@@ -1,8 +1,8 @@
 {
-  "name": "ROD Edge Detector",
-  "short_name": "ROD Edge",
-  "description": "On-Device Real-Time Obstacle Detection for Visual Navigation",
-  "start_url": "./index.html",
+  "name": "VisionX Navigation",
+  "short_name": "VisionX Nav",
+  "description": "On-Device Real-Time Obstacle Detection & Spatial Guidance",
+  "start_url": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
   "background_color": "#090d16",

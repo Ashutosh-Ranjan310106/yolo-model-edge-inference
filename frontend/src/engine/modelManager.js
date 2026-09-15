@@ -1,30 +1,26 @@
 /**
  * ModelManager: Central orchestrator managing YoloModel and DepthModel independently.
- * Coordinates asynchronous execution, lifecycle, and provider selection.
+ * Coordinates asynchronous execution, rate-limiting, and latest-frame buffering.
  */
-import { YoloModel } from "./yolo_model.js?v=4.7";
-import { DepthModel } from "./depth_model.js?v=4.7";
+
+import { YoloModel } from "./yoloModel.js";
+import { DepthModel } from "./depthModel.js";
 
 export class ModelManager {
   constructor() {
     this.yolo = new YoloModel();
     this.depth = new DepthModel();
 
-    // Rates configuration
-    this.yoloTargetFps = 12;
+    this.yoloTargetFps = 15;
     this.depthTargetFps = 6;
 
-    // Latency & performance tracking
     this.stats = {
       yoloFps: 0,
       yoloLatencyMs: 0,
       depthFps: 0,
       depthLatencyMs: 0,
       depthResolution: 512,
-      depthLoadTimeMs: 0,
       depthDroppedFrames: 0,
-      pipelineLatencyMs: 0,
-      e2eLatencyMs: 0,
       yoloProvider: "wasm",
       depthProvider: "wasm",
       lastError: null
@@ -38,7 +34,6 @@ export class ModelManager {
     this.yoloFpsHistory = [];
     this.depthFpsHistory = [];
 
-    // Cache of latest valid results for non-blocking fusion
     this.latestDetections = [];
     this.latestDepthResult = null;
   }
@@ -51,9 +46,7 @@ export class ModelManager {
   }
 
   async loadDepthModel(arrayBuffer, metadata) {
-    const t0 = performance.now();
     const res = await this.depth.load(arrayBuffer, metadata);
-    this.stats.depthLoadTimeMs = Math.round(performance.now() - t0);
     this.stats.depthProvider = res.provider;
     this.stats.depthResolution = res.resolution || metadata.resolution || 512;
     this.stats.depthDroppedFrames = 0;
@@ -69,9 +62,6 @@ export class ModelManager {
     return this.depth.isLoaded;
   }
 
-  /**
-   * Dispatches YOLO inference on a background tick if interval has passed and worker is free.
-   */
   async maybeRunYolo(imageData, frameWidth, frameHeight, confThreshold) {
     if (!this.yolo.isLoaded || this.isYoloRunning) {
       return this.latestDetections;
@@ -88,10 +78,8 @@ export class ModelManager {
       const res = await this.yolo.predict(imageData, frameWidth, frameHeight, confThreshold);
       this.latestDetections = res.detections;
       this.stats.yoloLatencyMs = res.latencyMs;
-      this.stats.yoloProvider = this.yolo.provider;
       this.stats.lastError = null;
 
-      // Update FPS
       const delta = now - this.lastYoloRunTime;
       if (delta > 0 && this.lastYoloRunTime > 0) {
         this.yoloFpsHistory.push(1000 / delta);
@@ -109,10 +97,6 @@ export class ModelManager {
     return this.latestDetections;
   }
 
-  /**
-   * Dispatches Depth inference on a background tick if interval has passed and worker is free.
-   * Implements latest-frame strategy with frame dropping to prevent queue buildup.
-   */
   async maybeRunDepth(imageData, letterboxInfo = null) {
     if (!this.depth.isLoaded) {
       return this.latestDepthResult;
@@ -130,15 +114,11 @@ export class ModelManager {
     }
 
     this.isDepthRunning = true;
-    const tStart = performance.now();
     try {
       const res = await this.depth.predict(imageData, letterboxInfo);
       if (res) {
         this.latestDepthResult = res;
         this.stats.depthLatencyMs = res.latencyMs;
-        this.stats.e2eLatencyMs = Math.round(performance.now() - tStart);
-        this.stats.depthProvider = this.depth.provider;
-        this.stats.depthResolution = this.depth.resolution;
         this.stats.lastError = null;
 
         const delta = now - this.lastDepthRunTime;

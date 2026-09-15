@@ -1,7 +1,9 @@
 /**
  * Local Model Cache using Browser IndexedDB.
- * Ensures models are downloaded once, validated, and loaded offline.
+ * Ensures ONNX model binaries are downloaded once from CDN or loaded via file picker,
+ * stored permanently in the browser, and accessible completely offline.
  */
+
 const DB_NAME = "ROD_Edge_Models_DB";
 const STORE_NAME = "cached_models";
 const DB_VERSION = 1;
@@ -9,7 +11,7 @@ const DB_VERSION = 1;
 export class LocalModelCache {
   constructor() {
     this.db = null;
-    this.memoryStore = new Map(); // In-memory fallback if IndexedDB is unavailable or quota exceeded
+    this.memoryStore = new Map();
   }
 
   async init() {
@@ -17,16 +19,14 @@ export class LocalModelCache {
     return new Promise((resolve) => {
       try {
         if (typeof indexedDB === "undefined") {
-          console.warn("[Cache] IndexedDB not supported in this environment. Using in-memory fallback.");
+          console.warn("[Cache] IndexedDB not supported; using in-memory store.");
           resolve();
           return;
         }
 
         const request = indexedDB.open(DB_NAME, DB_VERSION);
-        
-        // Don't hang indefinitely if blocked
         const timeout = setTimeout(() => {
-          console.warn("[Cache] IndexedDB open timed out after 3s. Proceeding with memory fallback.");
+          console.warn("[Cache] IndexedDB open timed out after 3s; using memory fallback.");
           resolve();
         }, 3000);
 
@@ -51,7 +51,7 @@ export class LocalModelCache {
 
         request.onblocked = () => {
           clearTimeout(timeout);
-          console.warn("[Cache] IndexedDB open blocked. Proceeding with memory fallback.");
+          console.warn("[Cache] IndexedDB blocked; using memory fallback.");
           resolve();
         };
       } catch (err) {
@@ -61,8 +61,8 @@ export class LocalModelCache {
     });
   }
 
-  async hasModel(modelId) {
-    if (this.memoryStore.has(modelId)) return true;
+  async hasModel(modelKey) {
+    if (this.memoryStore.has(modelKey)) return true;
     await this.init();
     if (!this.db) return false;
 
@@ -70,7 +70,7 @@ export class LocalModelCache {
       try {
         const tx = this.db.transaction(STORE_NAME, "readonly");
         const store = tx.objectStore(STORE_NAME);
-        const req = store.get(modelId);
+        const req = store.get(modelKey);
         req.onsuccess = () => resolve(!!req.result);
         req.onerror = () => resolve(false);
       } catch {
@@ -79,9 +79,9 @@ export class LocalModelCache {
     });
   }
 
-  async getModel(modelId) {
-    if (this.memoryStore.has(modelId)) {
-      return this.memoryStore.get(modelId);
+  async getModel(modelKey) {
+    if (this.memoryStore.has(modelKey)) {
+      return this.memoryStore.get(modelKey);
     }
     await this.init();
     if (!this.db) return null;
@@ -90,7 +90,7 @@ export class LocalModelCache {
       try {
         const tx = this.db.transaction(STORE_NAME, "readonly");
         const store = tx.objectStore(STORE_NAME);
-        const req = store.get(modelId);
+        const req = store.get(modelKey);
         req.onsuccess = () => resolve(req.result || null);
         req.onerror = () => resolve(null);
       } catch {
@@ -99,23 +99,20 @@ export class LocalModelCache {
     });
   }
 
-  async saveModel(modelId, arrayBuffer, metadata = {}) {
+  async saveModel(modelKey, arrayBuffer, metadata = {}) {
     const record = {
-      id: modelId,
+      id: modelKey,
       buffer: arrayBuffer,
       sizeBytes: arrayBuffer.byteLength,
       savedAt: new Date().toISOString(),
-      version: metadata.version || "1.0",
-      sha256: metadata.sha256 || "",
       metadata: metadata
     };
 
-    // Always store in memory for immediate instant access
-    this.memoryStore.set(modelId, record);
+    // Store in memory for immediate instant access
+    this.memoryStore.set(modelKey, record);
 
     await this.init();
     if (!this.db) {
-      console.log(`[Cache] Model ${modelId} saved to memory cache.`);
       return record;
     }
 
@@ -128,44 +125,36 @@ export class LocalModelCache {
         }
       };
 
-      // 4-second safety timeout so saving to IndexedDB NEVER freezes the UI
       const timer = setTimeout(() => {
-        console.warn(`[Cache] IndexedDB put for ${modelId} took > 4s, falling back to memory.`);
+        console.warn(`[Cache] IndexedDB save for ${modelKey} timed out; using memory.`);
         safeResolve();
       }, 4000);
 
       try {
         const tx = this.db.transaction(STORE_NAME, "readwrite");
-        
         tx.oncomplete = () => {
           clearTimeout(timer);
           safeResolve();
         };
-
-        tx.onerror = (e) => {
+        tx.onerror = () => {
           clearTimeout(timer);
-          console.warn(`[Cache] Transaction error saving ${modelId}:`, e.target?.error);
-          safeResolve(); // Already stored in memoryStore!
+          safeResolve();
         };
-
-        tx.onabort = (e) => {
+        tx.onabort = () => {
           clearTimeout(timer);
-          console.warn(`[Cache] Transaction aborted saving ${modelId}:`, e.target?.error);
-          safeResolve(); // Already stored in memoryStore!
+          safeResolve();
         };
-
         const store = tx.objectStore(STORE_NAME);
         store.put(record);
       } catch (err) {
         clearTimeout(timer);
-        console.warn(`[Cache] Exception putting ${modelId} into store:`, err);
         safeResolve();
       }
     });
   }
 
-  async deleteModel(modelId) {
-    this.memoryStore.delete(modelId);
+  async deleteModel(modelKey) {
+    this.memoryStore.delete(modelKey);
     await this.init();
     if (!this.db) return;
 
@@ -173,7 +162,25 @@ export class LocalModelCache {
       try {
         const tx = this.db.transaction(STORE_NAME, "readwrite");
         const store = tx.objectStore(STORE_NAME);
-        store.delete(modelId);
+        store.delete(modelKey);
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => resolve();
+      } catch {
+        resolve();
+      }
+    });
+  }
+
+  async clearAll() {
+    this.memoryStore.clear();
+    await this.init();
+    if (!this.db) return;
+
+    return new Promise((resolve) => {
+      try {
+        const tx = this.db.transaction(STORE_NAME, "readwrite");
+        const store = tx.objectStore(STORE_NAME);
+        store.clear();
         tx.oncomplete = () => resolve();
         tx.onerror = () => resolve();
       } catch {
@@ -184,6 +191,14 @@ export class LocalModelCache {
 
   async listCachedModels() {
     await this.init();
+    if (!this.db) {
+      return Array.from(this.memoryStore.values()).map(r => ({
+        id: r.id,
+        sizeBytes: r.sizeBytes,
+        savedAt: r.savedAt
+      }));
+    }
+
     return new Promise((resolve, reject) => {
       const tx = this.db.transaction(STORE_NAME, "readonly");
       const store = tx.objectStore(STORE_NAME);
@@ -192,9 +207,7 @@ export class LocalModelCache {
         const list = (req.result || []).map(item => ({
           id: item.id,
           sizeBytes: item.sizeBytes,
-          savedAt: item.savedAt,
-          version: item.version,
-          sha256: item.sha256
+          savedAt: item.savedAt
         }));
         resolve(list);
       };

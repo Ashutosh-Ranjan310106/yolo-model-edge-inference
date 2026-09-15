@@ -20,3 +20,8 @@ env/
 backend/weights/
 backend/runs/
 backend/pc_test_outputs/
+
+# Node dependencies
+node_modules/
+frontend/node_modules/
+.vite/

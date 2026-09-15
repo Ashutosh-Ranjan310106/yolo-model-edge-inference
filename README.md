@@ -1,25 +1,40 @@
-# YOLO Model Edge Inference & Mobile CDN 🚀
+# VisionX: Edge AI Perception & Assistive Intelligence Platform 🚀
 
-Mobile-optimized ONNX models and standalone edge-inference web client for real-time object detection and monocular depth estimation.
+[![ONNX Runtime Web](https://img.shields.io/badge/ONNX_Runtime_Web-1.21.0-blue.svg)](https://onnxruntime.ai/)
+[![Vite](https://img.shields.io/badge/Vite-6.4.3-purple.svg)](https://vitejs.dev/)
+[![React](https://img.shields.io/badge/React-18.3.1-61dafb.svg)](https://react.dev/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-Designed for real-time obstacle detection and assistive navigation on mobile devices (Smartphones, Wearables, PWA).
+**VisionX** is a next-generation multimodal assistive intelligence ecosystem uniting **100% on-device visual edge navigation** with **cloud-accelerated document synthesis**.
+
+- 🧭 **VisionX Navigation**: Fully client-side obstacle detection, 3D metric depth perception, walking corridor collision avoidance, and directional auditory guidance running directly in the browser via ONNX Runtime Web.
+- 📝 **Handwritten Notes Analyser**: AI-powered document digitization, mathematical formula OCR, and concept synthesis ([Live App](https://handwritten-notes-analyser-sgwn.vercel.app/)).
 
 ---
 
-## 📦 Distributable ONNX Models & Global CDN Links
+## 📦 Distributable ONNX Models & High-Speed CDN Endpoints
 
-All models in this repository are publicly accessible worldwide via high-speed CDNs:
+All models are hosted with public CORS headers (`Access-Control-Allow-Origin: *`) and download directly into client-side browser cache:
 
-| Model ID | User-Facing Name | Resolution | Classes | Size | Direct Raw URL / CDN Link |
+### 1. Object Detection Models
+| Model ID | User-Facing Name | Resolution | Classes | Size | Direct CDN URL |
 |---|---|---|---|---|---|
 | **`yolo26n_nav_run8_256`** | YOLO26-Nano Fast (Run 8) | 256×256 | 25 | 9.22 MB | [Download](https://raw.githubusercontent.com/Ashutosh-Ranjan310106/yolo-model-edge-inference/main/models/yolo26n_nav_run8_256.onnx) |
 | **`yolo26s_nav_run683_416`** | YOLO26-Small Balanced (Run 683) | 416×416 | 25 | 36.33 MB | [Download](https://raw.githubusercontent.com/Ashutosh-Ranjan310106/yolo-model-edge-inference/main/models/yolo26s_nav_run683_416.onnx) |
-| **`depth_256`** | YOLO26-Depth Metric (Low Power) | 256×256 | Dense | 19.81 MB | [Download](https://raw.githubusercontent.com/Ashutosh-Ranjan310106/yolo-model-edge-inference/main/models/depth/depth_256.onnx) |
-| **`depth_320`** | YOLO26-Depth Metric (Fast) | 320×320 | Dense | 19.81 MB | [Download](https://raw.githubusercontent.com/Ashutosh-Ranjan310106/yolo-model-edge-inference/main/models/depth/depth_320.onnx) |
-| **`depth_512`** | YOLO26-Depth Metric (Quality) | 512×512 | Dense | 19.81 MB | [Download](https://raw.githubusercontent.com/Ashutosh-Ranjan310106/yolo-model-edge-inference/main/models/depth/depth_512.onnx) |
-| **`depth_anything_v2_small`** | Depth Anything V2 (Quantized) | 518×518 | Relative | 26.0 MB | [Download](https://raw.githubusercontent.com/Ashutosh-Ranjan310106/yolo-model-edge-inference/main/models/depth_anything_v2_small_quantized.onnx) |
 
-Full metadata and checksums are recorded in [`models/models_manifest.json`](./models/models_manifest.json).
+### 2. Dense Metric & Relative Depth Models
+| Model ID | User-Facing Name | Resolution | Type | Size | Direct CDN URL |
+|---|---|---|---|---|---|
+| **`depth_256`** | YOLO26-Nano Depth | 256×256 | Metric (m) | 19.81 MB | [Download](https://raw.githubusercontent.com/Ashutosh-Ranjan310106/yolo-model-edge-inference/main/models/depth/depth_256.onnx) |
+| **`depth_320`** | YOLO26-Nano Depth | 320×320 | Metric (m) | 19.81 MB | [Download](https://raw.githubusercontent.com/Ashutosh-Ranjan310106/yolo-model-edge-inference/main/models/depth/depth_320.onnx) |
+| **`depth_512`** | YOLO26-Nano Depth | 512×512 | Metric (m) | 19.81 MB | [Download](https://raw.githubusercontent.com/Ashutosh-Ranjan310106/yolo-model-edge-inference/main/models/depth/depth_512.onnx) |
+| **`yolo26s_depth_256`** | YOLO26-Small Depth | 256×256 | Metric (m) | 45.98 MB | [Download](https://raw.githubusercontent.com/Ashutosh-Ranjan310106/yolo-model-edge-inference/main/models/depth/yolo26s_depth_256.onnx) |
+| **`yolo26s_depth_320`** | YOLO26-Small Depth | 320×320 | Metric (m) | 45.98 MB | [Download](https://raw.githubusercontent.com/Ashutosh-Ranjan310106/yolo-model-edge-inference/main/models/depth/yolo26s_depth_320.onnx) |
+| **`yolo26m_depth_256`** | YOLO26-Medium Depth | 256×256 | Metric (m) | 84.33 MB | [Download](https://raw.githubusercontent.com/Ashutosh-Ranjan310106/yolo-model-edge-inference/main/models/depth/yolo26m_depth_256.onnx) |
+| **`yolo26m_depth_320`** | YOLO26-Medium Depth | 320×320 | Metric (m) | 84.33 MB | [Download](https://raw.githubusercontent.com/Ashutosh-Ranjan310106/yolo-model-edge-inference/main/models/depth/yolo26m_depth_320.onnx) |
+| **`depth_anything_v2_small_quantized`** | Depth Anything V2 Small | 518×518 | Relative | 26.00 MB | [Download](https://raw.githubusercontent.com/Ashutosh-Ranjan310106/yolo-model-edge-inference/main/models/depth_anything_v2_small_quantized.onnx) |
+
+Full metadata, input/output tensor shapes, and checksums are maintained in [`models/models_manifest.json`](./models/models_manifest.json).
 
 ---
 
@@ -29,28 +44,42 @@ Both `yolo26n_nav_run8` and `yolo26s_nav_run683` share the unified 25-class navi
 
 ---
 
-## ⚡ Quickstart
+## ⚡ Quickstart: Running VisionX App
 
-### 1. Launch the Edge Inference Client
-Open `frontend/index.html` in any browser or serve it with Python:
+### 1. VisionX Standalone React Web Client (`frontend/`)
+The complete modern VisionX React app is located in `frontend/`.
+
 ```bash
 cd frontend
-python -m http.server 8080
+npm install
+npm run dev
 ```
-Visit `http://localhost:8080` on desktop or mobile.
+Open `http://localhost:5173` on desktop or phone.
 
-### 2. Optional: Run the FastAPI Registry Backend
+#### Production Build:
+```bash
+cd frontend
+npm run build
+```
+The compiled, production-ready static assets are in `frontend/dist/`. You can serve them with any static web server:
+```bash
+python -m http.server -d frontend/dist 8080
+```
+
+### 2. Optional: FastAPI Registry & Offline Weights Backend (`backend/`)
 ```bash
 cd backend
 pip install -r requirements.txt
 python -m app.main
 ```
-Server starts on `http://0.0.0.0:8000`.
+FastAPI runs on `http://0.0.0.0:8000`.
 
 ---
 
-## 📱 Features
-- **Zero-Install PWA**: Runs directly in Safari, Chrome, Edge, and Firefox.
-- **ONNX Runtime Web (WASM SIMD)**: Single-threaded SIMD acceleration with zero cross-origin worker restrictions.
-- **Offline-First Storage**: Models are cached into browser `IndexedDB` on the first run; subsequent runs require zero internet connection.
-- **Dual Inference**: Runs custom YOLO detection and Depth Anything V2 concurrently with temporal tracking and obstacle collision warnings.
+## 📱 Platform Features & Architecture
+- **100% Client-Side Edge Inference**: Video frames never leave RAM. Zero cloud dependencies for perception.
+- **Unified VisionX Portal**: Seamless switching between on-device Navigation and Handwritten Notes Analyser.
+- **Dual-Model Real-Time Fusion**: YOLO26 object detection (~15 FPS) fused with Dense Depth estimation (~6-10 FPS).
+- **Spatial Audio Guidance**: 7-zone direction tracking, path sector evaluation, and obstacle avoidance alerts.
+- **WASM SIMD Acceleration**: Single-threaded, zero-worker-restriction ONNX Runtime Web engine.
+- **Offline Cache**: Browser CacheStorage / IndexedDB caches models after initial download for zero-bandwidth offline usage.
