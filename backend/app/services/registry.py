@@ -35,228 +35,50 @@ LOCAL_46_CLASSES = [
 ]
 
 # Strictly defined models: Converted Saved (ROD) and Official Baseline (COCO)
+# 25 Classes for Run 8 and Run 683
+RUN8_RUN683_CLASSES = [
+    "Bike/Motorcycle", "Building", "Vehicle", "Person", "Stairs",
+    "Traffic sign", "Electrical Pole", "Dustbin", "Animal", "Manhole",
+    "Tree", "Guard rail", "Pedestrian crosswalk", "Bench", "Traffic Cone",
+    "Teraffic Barrel", "Plant Pot", "Chair", "Door", "Table/Desk",
+    "Bookshelf/Storage", "Window", "Sign_Board", "Display", "Drawer"
+]
+
 KNOWN_MODELS = [
-    # --- Category: Converted Saved Models (Fine-tuned ROD Runs) ---
+    # 1. Run 8: YOLO26-Nano Fast (256p - 25 Classes)
     {
-        "id": "yolo26n-nav-run-8-256x256",
-        "name": "⚡ yolo26n-nav-run-8 (256x256 - 25 Classes)",
+        "id": "yolo26n_nav_run8",
+        "name": "⚡ YOLO26-Nano Fast (Run 8 - 256p - 25 Classes)",
         "category": "converted_saved",
         "variant": "n",
         "run_id": "yolo26n-nav-run-8-256x256",
         "source_path": settings.TRAINING_RUNS_DIR / "yolo26n-nav-run-8-256x256" / "weights" / "best.pt",
-        "classes": [
-            "Bike/Motorcycle", "Building", "Vehicle", "Person", "Stairs",
-            "Traffic sign", "Electrical Pole", "Dustbin", "Animal", "Manhole",
-            "Tree", "Guard rail", "Pedestrian crosswalk", "Bench", "Traffic Cone",
-            "Teraffic Barrel", "Plant Pot", "Chair", "Door", "Table/Desk",
-            "Bookshelf/Storage", "Window", "Sign_Board", "Display", "Drawer"
-        ],
+        "classes": RUN8_RUN683_CLASSES,
         "resolutions": [256],
         "is_end2end": True,
         "cdn_urls": {
-            256: "https://raw.githubusercontent.com/Ashutosh-Ranjan310106/yolo-model-edge-inference/main/models/yolo26n-nav-run-8_256.onnx"
+            256: "https://raw.githubusercontent.com/Ashutosh-Ranjan310106/yolo-model-edge-inference/main/models/yolo26n_nav_run8_256.onnx"
         }
     },
+    # 2. Run 683: YOLO26-Small Balanced (416p - 25 Classes)
     {
-        "id": "yolo26s-nav-683-416x416",
-        "name": "⚡ yolo26s-nav-683 (416x416 - 25 Classes)",
+        "id": "yolo26s_nav_run683",
+        "name": "⚡ YOLO26-Small Balanced (Run 683 - 416p - 25 Classes)",
         "category": "converted_saved",
         "variant": "s",
         "run_id": "yolo26s-nav-683-416x416",
         "source_path": settings.TRAINING_RUNS_DIR / "yolo26s-nav-683-416x416" / "weights" / "best.pt",
-        "classes": [
-            "Bike/Motorcycle", "Building", "Vehicle", "Person", "Stairs",
-            "Traffic sign", "Electrical Pole", "Dustbin", "Animal", "Manhole",
-            "Tree", "Guard rail", "Pedestrian crosswalk", "Bench", "Traffic Cone",
-            "Teraffic Barrel", "Plant Pot", "Chair", "Door", "Table/Desk",
-            "Bookshelf/Storage", "Window", "Sign_Board", "Display", "Drawer"
-        ],
+        "classes": RUN8_RUN683_CLASSES,
         "resolutions": [416],
         "is_end2end": True,
         "cdn_urls": {
-            416: "https://raw.githubusercontent.com/Ashutosh-Ranjan310106/yolo-model-edge-inference/main/models/yolo26s-nav-683_416.onnx"
+            416: "https://raw.githubusercontent.com/Ashutosh-Ranjan310106/yolo-model-edge-inference/main/models/yolo26s_nav_run683_416.onnx"
         }
     },
+    # 3. Depth Model: YOLO26-Depth Metric
     {
-        "id": "yolo26n-nav-run6_320x320",
-        "name": "⚡ yolo26n-nav-run6 (Best - 46 Classes)",
-        "category": "converted_saved",
-        "variant": "n",
-        "run_id": "yolo26n-nav-run6_320x320",
-        "source_path": settings.TRAINING_RUNS_DIR / "yolo26n-nav-run6_320x320" / "weights" / "best.pt",
-        "classes": LOCAL_46_CLASSES,
-        "resolutions": [320, 480],
-        "is_end2end": True,
-        "cdn_urls": {
-            320: "https://raw.githubusercontent.com/Ashutosh-Ranjan310106/yolo-model-edge-inference/main/models/yolo26n-nav-run6_320.onnx",
-            480: "https://raw.githubusercontent.com/Ashutosh-Ranjan310106/yolo-model-edge-inference/main/models/yolo26n-nav-run6_480.onnx"
-        }
-    },
-    {
-        "id": "yolo26n-24k-nav-run1_best",
-        "name": "⚡ yolo26n-24k-nav-run1 (Best - 24k Dataset)",
-        "category": "converted_saved",
-        "variant": "n",
-        "run_id": "yolo26n-24k-nav-run1",
-        "source_path": settings.TRAINING_RUNS_DIR / "yolo26n-24k-nav-run1" / "weights" / "best.pt",
-        "classes": settings.ROD_CLASSES,
-        "resolutions": [320, 480, 640],
-        "is_end2end": False,
-        "cdn_urls": {
-            320: "https://raw.githubusercontent.com/Ashutosh-Ranjan310106/yolo-model-edge-inference/main/models/yolo26n-24k-nav-run1_best_320.onnx"
-        }
-    },
-    {
-        "id": "yolo26s-nav-291_best",
-        "name": "⚡ yolo26s-nav-291 (Best - Run 291)",
-        "category": "converted_saved",
-        "variant": "s",
-        "run_id": "yolo26s-nav-291",
-        "source_path": settings.TRAINING_RUNS_DIR / "yolo26s-nav-291" / "weights" / "best.pt",
-        "classes": settings.ROD_CLASSES,
-        "resolutions": [320, 480]
-    },
-    {
-        "id": "yolo26s-nav-408_best",
-        "name": "⚡ yolo26s-nav-408 (Best - Run 408)",
-        "category": "converted_saved",
-        "variant": "s",
-        "run_id": "yolo26s-nav-408",
-        "source_path": settings.TRAINING_RUNS_DIR / "yolo26s-nav-408" / "weights" / "best.pt",
-        "classes": settings.ROD_CLASSES,
-        "resolutions": [320, 480]
-    },
-    {
-        "id": "yolo26s-nav-728_best",
-        "name": "⚡ yolo26s-nav-728 (Best - Run 728)",
-        "category": "converted_saved",
-        "variant": "s",
-        "run_id": "yolo26s-nav-728",
-        "source_path": settings.TRAINING_RUNS_DIR / "yolo26s-nav-728" / "weights" / "best.pt",
-        "classes": settings.ROD_CLASSES,
-        "resolutions": [320, 480]
-    },
-    {
-        "id": "yolov26n_best",
-        "name": "⚡ yolov26n_best (Best Baseline)",
-        "category": "converted_saved",
-        "variant": "n",
-        "run_id": None,
-        "source_path": settings.WEIGHTS_DIR / "yolov26n_best.pt",
-        "classes": settings.ROD_CLASSES,
-        "resolutions": [320, 480]
-    },
-
-    # --- Category: Official Baseline Models ---
-    {
-        "id": "yolo26n",
-        "name": "📦 YOLO26 Nano (Official COCO)",
-        "category": "official_model",
-        "variant": "n",
-        "run_id": None,
-        "source_path": settings.NAVIGATION_DIR / "yolo26n.pt",
-        "classes": COCO_CLASSES,
-        "resolutions": [320, 480]
-    },
-    {
-        "id": "yolo26s",
-        "name": "📦 YOLO26 Small (Official COCO)",
-        "category": "official_model",
-        "variant": "s",
-        "run_id": None,
-        "source_path": settings.NAVIGATION_DIR / "yolo26s.pt",
-        "classes": COCO_CLASSES,
-        "resolutions": [320, 480]
-    },
-    {
-        "id": "yolo26m",
-        "name": "📦 YOLO26 Medium (Official COCO)",
-        "category": "official_model",
-        "variant": "m",
-        "run_id": None,
-        "source_path": settings.NAVIGATION_DIR / "yolo26m.pt",
-        "classes": COCO_CLASSES,
-        "resolutions": [320, 480]
-    },
-    {
-        "id": "yolo11n",
-        "name": "📦 YOLO11 Nano (Official COCO)",
-        "category": "official_model",
-        "variant": "n",
-        "run_id": None,
-        "source_path": settings.NAVIGATION_DIR / "yolo11n.pt",
-        "classes": COCO_CLASSES,
-        "resolutions": [320, 480]
-    },
-    {
-        "id": "yolov8n",
-        "name": "📦 YOLOv8 Nano (Official COCO)",
-        "category": "official_model",
-        "task": "detection",
-        "variant": "n",
-        "run_id": None,
-        "source_path": settings.NAVIGATION_DIR / "yolov8n.pt",
-        "classes": COCO_CLASSES,
-        "resolutions": [320, 480]
-    },
-
-    # --- Category: Depth Estimation Models ---
-    {
-        "id": "depth_anything_v2_metric_small",
-        "name": "📐 Depth Anything V2 Metric Small (Metric in Meters)",
-        "category": "depth_model",
-        "task": "depth",
-        "variant": "s",
-        "run_id": None,
-        "source_path": settings.WEIGHTS_DIR / "depth" / "depth_anything_v2_metric_small.onnx",
-        "classes": [],
-        "resolutions": [518],
-        "input_tensor_name": "pixel_values",
-        "output_tensor_name": "predicted_depth",
-        "output_shape": [1, 518, 518],
-        "mean": [0.485, 0.456, 0.406],
-        "std": [0.229, 0.224, 0.225],
-        "is_metric": True
-    },
-    {
-        "id": "depth_anything_v2_small_quantized",
-        "name": "⚡ Depth Anything V2 Small (Mobile INT8 - 27MB)",
-        "category": "depth_model",
-        "task": "depth",
-        "variant": "s",
-        "run_id": None,
-        "source_path": settings.WEIGHTS_DIR / "depth" / "depth_anything_v2_small_quantized.onnx",
-        "classes": [],
-        "resolutions": [518],
-        "input_tensor_name": "pixel_values",
-        "output_tensor_name": "predicted_depth",
-        "output_shape": [1, 518, 518],
-        "mean": [0.485, 0.456, 0.406],
-        "std": [0.229, 0.224, 0.225],
-        "is_metric": False,
-        "cdn_url": "https://raw.githubusercontent.com/Ashutosh-Ranjan310106/yolo-model-edge-inference/main/models/depth_anything_v2_small_quantized.onnx"
-    },
-    {
-        "id": "yolo26s_depth",
-        "name": "📦 YOLO26 Small Depth (Official yolos-depth - 46MB)",
-        "category": "depth_model",
-        "task": "depth",
-        "variant": "s",
-        "run_id": None,
-        "source_path": settings.WEIGHTS_DIR / "depth" / "yolo26s_depth.onnx",
-        "classes": [],
-        "resolutions": [768],
-        "input_tensor_name": "images",
-        "output_tensor_name": "depth",
-        "output_shape": [1, 1, 768, 768],
-        "mean": [0.0, 0.0, 0.0],
-        "std": [255.0, 255.0, 255.0],
-        "is_metric": True,
-        "cdn_url": "https://raw.githubusercontent.com/Ashutosh-Ranjan310106/yolo-model-edge-inference/main/models/yolo26s_depth.onnx"
-    },
-    {
-        "id": "yolo26n_depth",
-        "name": "📐 YOLO26-Depth (512 Quality / 320 Fast / 256 Low-Power)",
+        "id": "yolo26_depth",
+        "name": "📐 YOLO26-Depth Metric (512 Quality / 320 Fast / 256 Low-Power)",
         "category": "depth_model",
         "task": "depth",
         "variant": "n",

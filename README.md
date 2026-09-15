@@ -12,11 +12,7 @@ All models in this repository are publicly accessible worldwide via high-speed C
 
 | Model ID | User-Facing Name | Resolution | Classes | Size | Direct Raw URL / CDN Link |
 |---|---|---|---|---|---|
-| **`yolo26n_nav_run1_320`** | YOLO26-Nano (Run 1) | 320×320 | 27 | 9.24 MB | [Download](https://raw.githubusercontent.com/Ashutosh-Ranjan310106/yolo-model-edge-inference/main/models/yolo26n_nav_run1_320.onnx) |
-| **`yolo26n_nav_run1_480`** | YOLO26-Nano (Run 1) | 480×480 | 27 | 9.30 MB | [Download](https://raw.githubusercontent.com/Ashutosh-Ranjan310106/yolo-model-edge-inference/main/models/yolo26n_nav_run1_480.onnx) |
 | **`yolo26n_nav_run8_256`** | YOLO26-Nano Fast (Run 8) | 256×256 | 25 | 9.22 MB | [Download](https://raw.githubusercontent.com/Ashutosh-Ranjan310106/yolo-model-edge-inference/main/models/yolo26n_nav_run8_256.onnx) |
-| **`yolo26s_nav_run291_320`** | YOLO26-Small Accurate (Run 291) | 320×320 | 27 | 36.32 MB | [Download](https://raw.githubusercontent.com/Ashutosh-Ranjan310106/yolo-model-edge-inference/main/models/yolo26s_nav_run291_320.onnx) |
-| **`yolo26s_nav_run291_480`** | YOLO26-Small Accurate (Run 291) | 480×480 | 27 | 36.37 MB | [Download](https://raw.githubusercontent.com/Ashutosh-Ranjan310106/yolo-model-edge-inference/main/models/yolo26s_nav_run291_480.onnx) |
 | **`yolo26s_nav_run683_416`** | YOLO26-Small Balanced (Run 683) | 416×416 | 25 | 36.33 MB | [Download](https://raw.githubusercontent.com/Ashutosh-Ranjan310106/yolo-model-edge-inference/main/models/yolo26s_nav_run683_416.onnx) |
 | **`depth_256`** | YOLO26-Depth Metric (Low Power) | 256×256 | Dense | 19.81 MB | [Download](https://raw.githubusercontent.com/Ashutosh-Ranjan310106/yolo-model-edge-inference/main/models/depth/depth_256.onnx) |
 | **`depth_320`** | YOLO26-Depth Metric (Fast) | 320×320 | Dense | 19.81 MB | [Download](https://raw.githubusercontent.com/Ashutosh-Ranjan310106/yolo-model-edge-inference/main/models/depth/depth_320.onnx) |
@@ -27,9 +23,9 @@ Full metadata and checksums are recorded in [`models/models_manifest.json`](./mo
 
 ---
 
-## 🎯 Supported Class Sets
-- **27 Classes (`run1` & `run291`)**: Bike, Building, Car, Person, Stairs, Traffic sign, Electrical Pole, Road, Motorcycle, Dustbin, Dog, Manhole, Tree, Guard rail, Pedestrian crosswalk, Truck, Bus, Bench, Traffic Cone, Fire hydrant, Teraffic Barrel, Plant Pot, Electrical Box, Chair, Bicycle Rack, Door, Wall.
-- **25 Classes (`run8` & `run683`)**: Bike/Motorcycle, Building, Vehicle, Person, Stairs, Traffic sign, Electrical Pole, Dustbin, Animal, Manhole, Tree, Guard rail, Pedestrian crosswalk, Bench, Traffic Cone, Teraffic Barrel, Plant Pot, Chair, Door, Table/Desk, Bookshelf/Storage, Window, Sign_Board, Display, Drawer.
+## 🎯 Active Navigation Classes (25 Classes)
+Both `yolo26n_nav_run8` and `yolo26s_nav_run683` share the unified 25-class navigation vocabulary:
+1. `Bike/Motorcycle` 2. `Building` 3. `Vehicle` 4. `Person` 5. `Stairs` 6. `Traffic sign` 7. `Electrical Pole` 8. `Dustbin` 9. `Animal` 10. `Manhole` 11. `Tree` 12. `Guard rail` 13. `Pedestrian crosswalk` 14. `Bench` 15. `Traffic Cone` 16. `Teraffic Barrel` 17. `Plant Pot` 18. `Chair` 19. `Door` 20. `Table/Desk` 21. `Bookshelf/Storage` 22. `Window` 23. `Sign_Board` 24. `Display` 25. `Drawer`
 
 ---
 
