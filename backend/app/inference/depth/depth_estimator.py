@@ -35,8 +35,8 @@ class DepthEstimator:
 
     def resolve_onnx_path(self, model_id: str, resolution: int) -> Optional[Path]:
         """Finds depth ONNX model file."""
-        # 1. Check resolution-specific depth models first (320, 512)
-        if resolution in (320, 512):
+        # 1. Check resolution-specific depth models first (256, 320, 512)
+        if resolution in (256, 320, 512):
             cand = settings.NAVIGATION_DIR / "Edge_Inference" / "models" / "depth" / f"depth_{resolution}.onnx"
             if cand.exists():
                 return cand

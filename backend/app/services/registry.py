@@ -38,6 +38,46 @@ LOCAL_46_CLASSES = [
 KNOWN_MODELS = [
     # --- Category: Converted Saved Models (Fine-tuned ROD Runs) ---
     {
+        "id": "yolo26n-nav-run-8-256x256",
+        "name": "⚡ yolo26n-nav-run-8 (256x256 - 25 Classes)",
+        "category": "converted_saved",
+        "variant": "n",
+        "run_id": "yolo26n-nav-run-8-256x256",
+        "source_path": settings.TRAINING_RUNS_DIR / "yolo26n-nav-run-8-256x256" / "weights" / "best.pt",
+        "classes": [
+            "Bike/Motorcycle", "Building", "Vehicle", "Person", "Stairs",
+            "Traffic sign", "Electrical Pole", "Dustbin", "Animal", "Manhole",
+            "Tree", "Guard rail", "Pedestrian crosswalk", "Bench", "Traffic Cone",
+            "Teraffic Barrel", "Plant Pot", "Chair", "Door", "Table/Desk",
+            "Bookshelf/Storage", "Window", "Sign_Board", "Display", "Drawer"
+        ],
+        "resolutions": [256],
+        "is_end2end": True,
+        "cdn_urls": {
+            256: "https://raw.githubusercontent.com/Ashutosh-Ranjan310106/yolo-model-edge-inference/main/models/yolo26n-nav-run-8_256.onnx"
+        }
+    },
+    {
+        "id": "yolo26s-nav-683-416x416",
+        "name": "⚡ yolo26s-nav-683 (416x416 - 25 Classes)",
+        "category": "converted_saved",
+        "variant": "s",
+        "run_id": "yolo26s-nav-683-416x416",
+        "source_path": settings.TRAINING_RUNS_DIR / "yolo26s-nav-683-416x416" / "weights" / "best.pt",
+        "classes": [
+            "Bike/Motorcycle", "Building", "Vehicle", "Person", "Stairs",
+            "Traffic sign", "Electrical Pole", "Dustbin", "Animal", "Manhole",
+            "Tree", "Guard rail", "Pedestrian crosswalk", "Bench", "Traffic Cone",
+            "Teraffic Barrel", "Plant Pot", "Chair", "Door", "Table/Desk",
+            "Bookshelf/Storage", "Window", "Sign_Board", "Display", "Drawer"
+        ],
+        "resolutions": [416],
+        "is_end2end": True,
+        "cdn_urls": {
+            416: "https://raw.githubusercontent.com/Ashutosh-Ranjan310106/yolo-model-edge-inference/main/models/yolo26s-nav-683_416.onnx"
+        }
+    },
+    {
         "id": "yolo26n-nav-run6_320x320",
         "name": "⚡ yolo26n-nav-run6 (Best - 46 Classes)",
         "category": "converted_saved",
@@ -216,14 +256,14 @@ KNOWN_MODELS = [
     },
     {
         "id": "yolo26n_depth",
-        "name": "📐 YOLO26-Depth (512 Quality / 320 Fast)",
+        "name": "📐 YOLO26-Depth (512 Quality / 320 Fast / 256 Low-Power)",
         "category": "depth_model",
         "task": "depth",
         "variant": "n",
         "run_id": None,
         "source_path": settings.NAVIGATION_DIR / "Edge_Inference" / "models" / "depth" / "depth_512.onnx",
         "classes": [],
-        "resolutions": [512, 320],
+        "resolutions": [512, 320, 256],
         "default_resolution": 512,
         "input_tensor_name": "images",
         "output_tensor_name": "depth",
@@ -233,7 +273,8 @@ KNOWN_MODELS = [
         "is_metric": True,
         "cdn_urls": {
             512: "https://raw.githubusercontent.com/Ashutosh-Ranjan310106/yolo-model-edge-inference/main/models/depth/depth_512.onnx",
-            320: "https://raw.githubusercontent.com/Ashutosh-Ranjan310106/yolo-model-edge-inference/main/models/depth/depth_320.onnx"
+            320: "https://raw.githubusercontent.com/Ashutosh-Ranjan310106/yolo-model-edge-inference/main/models/depth/depth_320.onnx",
+            256: "https://raw.githubusercontent.com/Ashutosh-Ranjan310106/yolo-model-edge-inference/main/models/depth/depth_256.onnx"
         }
     }
 ]
@@ -288,15 +329,9 @@ class ModelRegistryService:
             # Direct files
             self.mobile_dir / f"{model_id}_{resolution}.{format}",
             self.mobile_dir / f"{model_id}.{format}",
-            # Depth subdirectories
-            self.mobile_dir / "depth" / f"{model_id}.{format}",
-            self.mobile_dir / "depth" / f"{model_id}_{resolution}.{format}",
-            self.weights_dir / "depth" / f"{model_id}.{format}",
-            self.weights_dir / "depth" / f"{model_id}_{resolution}.{format}",
-            # Models directory (depth_512.onnx, depth_320.onnx)
-            settings.NAVIGATION_DIR / "Edge_Inference" / "models" / "depth" / f"depth_{resolution}.{format}",
-            settings.NAVIGATION_DIR / "models" / "depth" / f"depth_{resolution}.{format}",
-            self.weights_dir / "depth" / f"depth_{resolution}.{format}",
+            # General models directory
+            settings.NAVIGATION_DIR / "Edge_Inference" / "models" / f"{model_id}_{resolution}.{format}",
+            settings.NAVIGATION_DIR / "Edge_Inference" / "models" / f"{model_id}.{format}",
             # Standard aliases
             self.mobile_dir / f"official_{model_id}_{resolution}.{format}",
             self.mobile_dir / f"base_{model_id}_{resolution}.{format}",
@@ -305,6 +340,19 @@ class ModelRegistryService:
             self.weights_dir / f"official_{model_id}_{resolution}.{format}",
             self.weights_dir / f"base_{model_id}_{resolution}.{format}",
         ]
+
+        # Depth subdirectories only for depth models
+        if "depth" in model_id.lower():
+            candidates.extend([
+                settings.NAVIGATION_DIR / "Edge_Inference" / "models" / "depth" / f"depth_{resolution}.{format}",
+                settings.NAVIGATION_DIR / "models" / "depth" / f"depth_{resolution}.{format}",
+                self.mobile_dir / "depth" / f"depth_{resolution}.{format}",
+                self.weights_dir / "depth" / f"depth_{resolution}.{format}",
+                self.mobile_dir / "depth" / f"{model_id}_{resolution}.{format}",
+                self.weights_dir / "depth" / f"{model_id}_{resolution}.{format}",
+                self.mobile_dir / "depth" / f"{model_id}.{format}",
+                self.weights_dir / "depth" / f"{model_id}.{format}",
+            ])
         if "best" in model_id:
             stripped = model_id.replace("_best", "")
             candidates.extend([
@@ -317,13 +365,15 @@ class ModelRegistryService:
                 self.weights_dir / f"{model_id}_best_{resolution}.{format}",
             ])
 
-        # Specific alias for run6_320x320 -> run6
-        if "320x320" in model_id:
-            base_run = model_id.replace("_320x320", "")
-            candidates.extend([
-                self.mobile_dir / f"{base_run}_{resolution}.{format}",
-                self.weights_dir / f"{base_run}_{resolution}.{format}",
-            ])
+        # Aliases for resolution tags like 256x256, 320x320, 416x416
+        for res_tag in ["256x256", "320x320", "416x416", "480x480", "640x640"]:
+            if res_tag in model_id:
+                base_run = model_id.replace(f"_{res_tag}", "").replace(f"-{res_tag}", "")
+                candidates.extend([
+                    self.mobile_dir / f"{base_run}_{resolution}.{format}",
+                    self.weights_dir / f"{base_run}_{resolution}.{format}",
+                    settings.NAVIGATION_DIR / "Edge_Inference" / "models" / f"{base_run}_{resolution}.{format}",
+                ])
 
         # Aliases for yolos-depth -> yolo26s_depth
         if "depth" in model_id:

@@ -386,6 +386,115 @@
           "status": "ready"
         }
       ]
+    },
+    "yolo26n-nav-run-8-256x256": {
+      "id": "yolo26n-nav-run-8-256x256",
+      "name": "? yolo26n-nav-run-8 (256x256 - 25 Classes)",
+      "category": "converted_saved",
+      "variant": "n",
+      "source_checkpoint": "runs/train/yolo26n-nav-run-8-256x256/weights/best.pt",
+      "classes": 25,
+      "class_names": [
+        "Bike/Motorcycle",
+        "Building",
+        "Vehicle",
+        "Person",
+        "Stairs",
+        "Traffic sign",
+        "Electrical Pole",
+        "Dustbin",
+        "Animal",
+        "Manhole",
+        "Tree",
+        "Guard rail",
+        "Pedestrian crosswalk",
+        "Bench",
+        "Traffic Cone",
+        "Teraffic Barrel",
+        "Plant Pot",
+        "Chair",
+        "Door",
+        "Table/Desk",
+        "Bookshelf/Storage",
+        "Window",
+        "Sign_Board",
+        "Display",
+        "Drawer"
+      ],
+      "variants": [
+        {
+          "resolution": 256,
+          "format": "onnx",
+          "path": "weights/mobile/yolo26n-nav-run-8_256.onnx",
+          "size_bytes": 9671439,
+          "sha256": "6c736450fb2af1771061662680b5b45f1afafbd0e74d0a1a834b257dadc4ec15",
+          "status": "ready"
+        }
+      ]
+    },
+    "yolo26s-nav-683-416x416": {
+      "id": "yolo26s-nav-683-416x416",
+      "name": "? yolo26s-nav-683 (416x416 - 25 Classes)",
+      "category": "converted_saved",
+      "variant": "s",
+      "source_checkpoint": "runs/train/yolo26s-nav-683-416x416/weights/best.pt",
+      "classes": 25,
+      "class_names": [
+        "Bike/Motorcycle",
+        "Building",
+        "Vehicle",
+        "Person",
+        "Stairs",
+        "Traffic sign",
+        "Electrical Pole",
+        "Dustbin",
+        "Animal",
+        "Manhole",
+        "Tree",
+        "Guard rail",
+        "Pedestrian crosswalk",
+        "Bench",
+        "Traffic Cone",
+        "Teraffic Barrel",
+        "Plant Pot",
+        "Chair",
+        "Door",
+        "Table/Desk",
+        "Bookshelf/Storage",
+        "Window",
+        "Sign_Board",
+        "Display",
+        "Drawer"
+      ],
+      "variants": [
+        {
+          "resolution": 416,
+          "format": "onnx",
+          "path": "weights/mobile/yolo26s-nav-683_416.onnx",
+          "size_bytes": 38096516,
+          "sha256": "8387a7a20fb9aade0bb83806f370d3bd3cd24f2378337427bb6082b16c1e47b6",
+          "status": "ready"
+        }
+      ]
+    },
+    "yolo26n_depth": {
+      "id": "yolo26n_depth",
+      "name": "?? YOLO26-Depth (512 Quality / 320 Fast / 256 Low-Power)",
+      "category": "depth_model",
+      "variant": "n",
+      "source_checkpoint": "Edge_Inference/yolo26n-depth.pt",
+      "classes": 0,
+      "class_names": [],
+      "variants": [
+        {
+          "resolution": 256,
+          "format": "onnx",
+          "path": "weights/depth/depth_256.onnx",
+          "size_bytes": 20772072,
+          "sha256": "038e779b1a7eb9c22fd2e15a860e6a23cd5b58e62632429a602a64a65b2c095d",
+          "status": "ready"
+        }
+      ]
     }
   }
 }
